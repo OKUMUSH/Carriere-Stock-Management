@@ -1,54 +1,63 @@
-# 🚀 Carriere Stock Management
+# Carriere Stock Management System
 
-**Carriere Stock Management** is a web-based inventory management system designed to track and manage the stock of shoes, jackets, hats, and gloves used in Albert Heijn warehouses. The system provides real-time stock monitoring, low-stock alerts, and easy item editing, ensuring efficient warehouse operations.
+## 🚀 Live Demo
+[🔗 Live Example](https://cuddly-space-enigma-97jg7pwpqxwjhxj49-5050.app.github.dev/)
 
-## 📌 **Features**
+## 📖 About the Project
+Carriere Stock Management System is a web-based inventory tracking solution for managing shoes and other warehouse items efficiently. It provides real-time stock tracking, low-stock alerts, and export features.
 
-✅ **Stock Management** – Add, edit, and delete stock items dynamically
+## 🛠 Features
+- 📦 **Stock Management**: Add, edit, and delete inventory items.
+- 📉 **Low Stock Alerts**: Automatically highlights items below the threshold.
+- 📑 **Export Options**: Download stock reports in **PDF** or **Excel** format.
+- 🔍 **Sorting & Searching**: Sort and filter items easily.
+- 🖨 **Print Reports**: Print stock lists directly from the interface.
+- 📊 **Real-time Updates**: Live tracking of stock changes.
 
-✅ **Live Threshold Alerts** – Get warnings when stock falls below predefined limits.
-
-✅ **Category-Based Sorting** – Items are grouped and sorted by category (Shoes, Jackets, Hats, Gloves).
-
-✅ **Real-Time Editing** – Modify stock details without refreshing the page.
-
-✅ **Excel & PDF Export** – Download inventory reports with detailed insights.
-
-✅ **Print-Friendly Reports** – Optimized report generation for printing.
-
-✅ **Authentication & Authorization** – Role-based access control for safety.
-
----
-
-## 🔧 **Installation Guide**
-
-### 1️⃣ Clone the Repository
+## 📋 Installation
+### 1️⃣ Clone the repository
 ```sh
-git clone git@github.com:OKUMUSH/Carriere-Stock-Management.git
+git clone https://github.com/OKUMUSH/Carriere-Stock-Management.git
 cd Carriere-Stock-Management
 ```
 
-### 2️⃣ Install Dependencies
+### 2️⃣ Install dependencies
 ```sh
 npm install
 ```
 
-### 3️⃣ Configure Environment Variables
-Create a `.env` file in the root directory and add the following:
-```env
-PORT=5050
-MONGO_URI=your_mongodb_connection_string
-SESSION_SECRET=your_secret_key
-```
+### 3️⃣ Set up MongoDB
+Ensure MongoDB is installed and running on **localhost:27017**. If using a remote database, update the connection string in `.env`.
 
-### 4️⃣ Run the Server
+### 4️⃣ Start the server
 ```sh
-npm start
+npm run dev
 ```
 
-Server will start at **`http://localhost:5050`**
+The app will be available at `http://localhost:5050`.
+
+## 🛠 Technologies Used
+- **Node.js** + **Express.js** (Backend)
+- **MongoDB** + **Mongoose** (Database)
+- **EJS** (Templating Engine)
+- **Tailwind CSS** (Styling)
+- **jQuery** (AJAX & DOM Manipulation)
+- **jsPDF & xlsx.js** (PDF & Excel Exporting)
+
+## 📌 API Routes
+| Route | Method | Description |
+|--------|--------|----------------|
+| `/stock/add` | `POST` | Add a new stock item |
+| `/stock/update/:id` | `PUT` | Update stock details |
+| `/stock/delete/:id` | `POST` | Delete a stock item |
+| `/stock/list` | `GET` | Retrieve all stock items |
+
+## 📜 License
+This project is licensed under the **MIT License**. Feel free to contribute and improve!
 
 ---
+### 🛠 Contributing
+Pull requests are welcome! For major changes, please open an issue first to discuss what you would like to change.
 
 ## 🖥️ **How to Use?**
 
@@ -63,52 +72,10 @@ Server will start at **`http://localhost:5050`**
 5️⃣ **Download Reports**: Export inventory data as **Excel or PDF**.
 
 6️⃣ **Print Reports**: Cleanly formatted reports for easy printing.
+For questions or feature requests, feel free to reach out!
 
 ---
+📌 **Author**: OKUMUSH
 
-## 📡 **API Endpoints**
-
-| Method | Endpoint          | Description                  |
-|--------|------------------|------------------------------|
-| GET    | `/`              | Home page showing inventory |
-| GET    | `/stock`         | Fetch all stock items       |
-| POST   | `/stock/add`     | Add a new stock item        |
-| POST   | `/stock/edit/:id` | Edit an existing item      |
-| DELETE | `/stock/delete/:id` | Remove stock item         |
-
----
-
-## 🖼️ **Screenshots**
-
-### 🔹 **Dashboard**
-![Dashboard](https://via.placeholder.com/800x400?text=Dashboard+Screenshot)
-
-### 🔹 **Low Stock Alerts**
-![Low Stock](https://via.placeholder.com/800x400?text=Low+Stock+Warning)
-
----
-
-## 🛠️ **Technologies Used**
-- **Backend**: Node.js, Express.js, MongoDB
-- **Frontend**: EJS, Tailwind CSS, jQuery, AJAX
-- **Data Export**: XLSX (Excel), jsPDF (PDF)
-
----
-
-## 📜 **License**
-This project is **open-source** and licensed under the **MIT License**.
-
----
-
-## ✨ **Contributors**
-👤 **[OKUMUSH](https://github.com/OKUMUSH)** - Main Developer
-
-👥 **Contributions are welcome!**
-
----
-
-## ⭐ **Support & Feedback**
-💡 Found a bug or have a feature request? Open an issue in the repository!
-
-If you like this project, don’t forget to **🌟 star the repo!** 😊
+✉ **Contact**: [GitHub](https://github.com/OKUMUSH)
 

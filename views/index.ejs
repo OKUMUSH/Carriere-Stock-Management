@@ -9,70 +9,56 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.6.0/jspdf.plugin.autotable.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-</head>
-<style>
-    @media print {
-        .threshold-column, .actions-column, .actions-column button {
-            display: none !important;
+    <style>
+        /* 📌 Mobil Uyum için Scrollable Table */
+        .stock-table-container {
+            overflow-x: auto;
         }
-    }
-    /* 📌 Genel Tablo Ayarları */
-    table {
-        width: 100%;
-        border-collapse: collapse;
-        table-layout: fixed; /* 📌 Sabit genişlikli sütunlar */
-    }
+        
+        /* 📌 Threshold seviyelerine göre renk */
+        .low-stock {
+            background-color: #ffcccb !important; /* 🔴 Kritik Stok (Red) */
+        }
+        .near-threshold {
+            background-color: #fff3cd !important; /* 🟡 Yakın Threshold (Yellow) */
+        }
 
-    /* 📌 Tüm hücrelere sabit genişlik ve ortalama ver */
-    th, td {
-        border: 1px solid #ddd;
-        padding: 10px;
-        text-align: center;
-        vertical-align: middle;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-
-    /* 📌 Edit modunda input ve select'lerin taşmasını engelle */
-    td input, td select {
-        width: 100%; /* 📌 Genişlik sabit kalsın */
-        max-width: 120px; /* 📌 Maksimum genişlik belirleyerek taşmayı engelle */
-        text-align: center;
-        padding: 5px;
-        font-size: 14px;
-    }
-
-    /* 📌 Butonları sabitle */
-    .actions {
-        display: flex;
-        justify-content: center;
-        gap: 5px;
-        min-width: 160px;
-    }
-
-    /* 📌 Butonların genişliğini belirle */
-    .actions button {
-        width: 70px;
-        height: 30px;
-        font-size: 14px;
-    }
-</style>
+        /* 📌 Tablo Stili */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 600px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        /* 📌 Edit modunda input taşmasını önle */
+        td input, td select {
+            width: 100%;
+            max-width: 120px;
+            padding: 5px;
+            font-size: 14px;
+        }
+    </style>
+</head>
 <body class="bg-gray-100 p-6">
 
     <div class="max-w-6xl mx-auto bg-white shadow-lg rounded-lg p-6">
         <h1 class="text-3xl font-bold mb-4 text-center">🛒 Stock Management</h1>
 
-        <!-- 📌 Toast Notification Container -->
-        <div id="toast-container" class="fixed top-5 right-5 space-y-3 z-50"></div>
-
-        <!-- 🚨 Threshold Warning -->
+        <!-- 🚨 Threshold Uyarısı -->
         <div id="lowStockWarning" class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4 hidden">
             <h2 class="text-lg font-bold">⚠️ Low Stock Alert!</h2>
             <ul id="lowStockList" class="list-disc pl-4"></ul>
         </div>
 
-        <!-- 📌 Add New Stock -->
+        <!-- 📌 Yeni Ürün Ekleme Formu -->
         <form id="addStockForm" class="mb-6 bg-gray-200 p-4 rounded-lg">
             <h2 class="text-xl font-semibold mb-2">➕ Add New Item</h2>
             <div class="grid grid-cols-2 gap-4">
@@ -91,32 +77,31 @@
             <button type="submit" class="mt-4 bg-green-500 text-white px-4 py-2 rounded">Add Item</button>
         </form>
 
-
-        <!-- 📋 Stock List -->
-        <div class="bg-white p-4 rounded-lg shadow stock-table-container">
+        <!-- 📋 Stok Listesi -->
+        <div class="stock-table-container bg-white p-4 rounded-lg shadow">
             <h2 class="text-xl font-semibold mb-2">📦 Stock List</h2>
-            <table class="w-full border-collapse">
+            <table>
                 <thead>
                     <tr class="bg-gray-200">
-                        <th class="p-2 border cursor-pointer" onclick="sortTable('category')">Category ⬍</th>
-                        <th class="p-2 border cursor-pointer" onclick="sortTable('brand')">Brand ⬍</th>
-                        <th class="p-2 border cursor-pointer" onclick="sortTable('model')">Model ⬍</th>
-                        <th class="p-2 border cursor-pointer" onclick="sortTable('size')">Size ⬍</th>
-                        <th class="p-2 border cursor-pointer" onclick="sortTable('stock')">Stock ⬍</th>
-                        <th class="p-2 border threshold-column">Threshold</th>
-                        <th class="p-2 border actions-column">Actions</th>
+                        <th onclick="sortTable('category')">Category ⬍</th>
+                        <th onclick="sortTable('brand')">Brand ⬍</th>
+                        <th onclick="sortTable('model')">Model ⬍</th>
+                        <th onclick="sortTable('size')">Size ⬍</th>
+                        <th onclick="sortTable('stock')">Stock ⬍</th>
+                        <th>Threshold</th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody id="stockTable">
                     <% stocks.forEach(stock => { %>
                         <tr id="row-<%= stock._id %>">
-                            <td class="p-2 border"><%= stock.category %></td>
-                            <td class="p-2 border"><%= stock.brand %></td>
-                            <td class="p-2 border"><%= stock.model %></td>
-                            <td class="p-2 border"><%= stock.size %></td>
-                            <td class="p-2 border"><%= stock.stock %></td>
-                            <td class="p-2 border threshold-column"><%= stock.lowStockThreshold %></td>
-                            <td class="p-2 border actions-column">
+                            <td><%= stock.category %></td>
+                            <td><%= stock.brand %></td>
+                            <td><%= stock.model %></td>
+                            <td><%= stock.size %></td>
+                            <td><%= stock.stock %></td>
+                            <td><%= stock.lowStockThreshold %></td>
+                            <td>
                                 <button onclick="editStock('<%= stock._id %>')" class="bg-blue-500 text-white px-2 py-1 rounded">Edit</button>
                                 <button onclick="deleteStock('<%= stock._id %>')" class="bg-red-500 text-white px-2 py-1 rounded ml-2">Delete</button>
                             </td>
@@ -125,56 +110,94 @@
                 </tbody>
             </table>
         </div>
+
         <div class="mt-4 flex justify-end gap-2">
             <button onclick="downloadPDF()" class="bg-red-500 text-white px-4 py-2 rounded">📄 Download PDF</button>
             <button onclick="downloadExcel()" class="bg-green-500 text-white px-4 py-2 rounded">📊 Download Excel</button>
             <button onclick="printTable()" class="bg-blue-500 text-white px-4 py-2 rounded">🖨️ Print</button>
         </div>
     </div>
-</body>
-</html>
 
     <script>
-        document.addEventListener("DOMContentLoaded", stockChecker());
-        //stock checker
-        function stockChecker(){
-            let lowStockList = document.getElementById("lowStockList");
-            let lowStockWarning = document.getElementById("lowStockWarning");
-
-            // 📌 Tablodaki tüm ayakkabıları kontrol et
-            let rows = document.querySelectorAll("#stockTable tr");
-
-            let lowStockItems = [];
-
-            rows.forEach(row => {
-                let category = row.querySelector("td:nth-child(1)").innerText;
-                let brand = row.querySelector("td:nth-child(2)").innerText;
-                let model = row.querySelector("td:nth-child(3)").innerText;
-                let size = row.querySelector("td:nth-child(4)").innerText;
-                let stock = parseInt(row.querySelector("td:nth-child(5)").innerText, 10);
-                let threshold = parseInt(row.querySelector("td:nth-child(6)").innerText, 10);
+        function stockChecker() {
+            document.querySelectorAll("#stockTable tr").forEach(row => {
+                let stock = parseInt(row.children[4].innerText);
+                let threshold = parseInt(row.children[5].innerText);
 
                 if (stock <= threshold) {
-                    lowStockItems.push(`${category} ${brand}-${model} (Size: ${size}) - Stock: ${stock}`);
-                    row.classList.add("bg-yellow-200"); // 🚨 Kritik stoklar için satırı kırmızı yap
-                }
-                else {
-                    row.classList.remove("bg-yellow-200");
+                    row.classList.add("low-stock");
+                } else if (stock - threshold <= 2) {
+                    row.classList.add("near-threshold");
+                } else {
+                    row.classList.remove("low-stock", "near-threshold");
                 }
             });
-
-            // 📌 Eğer threshold altında ayakkabı varsa, uyarıyı göster
-            if (lowStockItems.length > 0) {
-                lowStockWarning.classList.remove("hidden");
-                lowStockList.innerHTML = lowStockItems.map(item => `<li>${item}</li>`).join("");
-            }
         }
-                //add shoe
-        $(document).ready(function () {
-        // 📌 Yeni stok ekleme (AJAX)
-        $("#addStockForm").submit(function (event) {
-            event.preventDefault(); // Sayfanın yeniden yüklenmesini engelle
 
+        function downloadPDF() {
+            const doc = new jsPDF();
+            doc.text("Stock List", 14, 10);
+            doc.autoTable({ html: "#stockTable" });
+            doc.save("Stock_List.pdf");
+        }
+
+        function downloadExcel() {
+            let wb = XLSX.utils.table_to_book(document.querySelector("table"));
+            XLSX.writeFile(wb, "Stock_Report.xlsx");
+        }
+
+        function printTable() {
+            let printContents = document.querySelector(".stock-table-container").innerHTML;
+            let originalContents = document.body.innerHTML;
+            document.body.innerHTML = printContents;
+            window.print();
+            document.body.innerHTML = originalContents;
+        }
+
+        document.addEventListener("DOMContentLoaded", stockChecker);
+    </script>
+
+</body>
+</html>
+<script>
+    // Run stock check on page load
+    document.addEventListener("DOMContentLoaded", () => {
+        stockChecker();
+    });
+
+    // ✅ Function to check low stock items and display alerts
+    function stockChecker() {
+        let lowStockList = document.getElementById("lowStockList");
+        let lowStockWarning = document.getElementById("lowStockWarning");
+
+        let rows = document.querySelectorAll("#stockTable tr");
+        let lowStockItems = [];
+
+        rows.forEach(row => {
+            let cells = row.querySelectorAll("td");
+            let stock = parseInt(cells[4].innerText, 10);
+            let threshold = parseInt(cells[5].innerText, 10);
+
+            // Highlight row if stock is at or below threshold
+            if (stock <= threshold) {
+                lowStockItems.push(`${cells[0].innerText} ${cells[1].innerText}-${cells[2].innerText} (Size: ${cells[3].innerText}) - Stock: ${stock}`);
+                row.classList.add("bg-yellow-200");
+            } else {
+                row.classList.remove("bg-yellow-200");
+            }
+        });
+
+        // Show alert if there are low stock items
+        if (lowStockItems.length > 0) {
+            lowStockWarning.classList.remove("hidden");
+            lowStockList.innerHTML = lowStockItems.map(item => `<li>${item}</li>`).join("");
+        }
+    }
+
+    $(document).ready(() => {
+        // ✅ Handle new stock item submission via AJAX
+        $("#addStockForm").submit(function (event) {
+            event.preventDefault();
             let stockData = {
                 category: $("#category").val(),
                 brand: $("#brand").val(),
@@ -184,431 +207,128 @@
                 lowStockThreshold: $("#lowStockThreshold").val()
             };
 
-            $.ajax({
-                url: "/stock/add",
-                type: "POST",
-                contentType: "application/json",
-                data: JSON.stringify(stockData),
-                success: function (response) {
-                    alert("✅ Stock item added successfully!");                    
-                    // 📌 Yeni eklenen ürünü tabloya ekleyelim (sayfayı yenilemeden)
-                    $("#stockTable").append(`
-                        <tr id="row-${response._id}">
-                            <td class="p-2 border">${stockData.category}</td>
-                            <td class="p-2 border">${stockData.brand}</td>
-                            <td class="p-2 border">${stockData.model}</td>
-                            <td class="p-2 border">${stockData.size}</td>
-                            <td class="p-2 border">${stockData.stock}</td>
-                            <td class="p-2 border">${stockData.lowStockThreshold}</td>
-                            <td class="p-2 border">
-                                <button onclick="editStock('${response._id}')" class="bg-blue-500 text-white px-2 py-1 rounded">Edit</button>
-                                <button onclick="deleteStock('${response._id}')" class="bg-red-500 text-white px-2 py-1 rounded ml-2">Delete</button>
-                            </td>
-                        </tr>
-                    `);
-                    stockChecker(); // 🔄 Stokları kontrol et
-                    // 📌 Formu sıfırla
-                    $("#addStockForm")[0].reset();
-                },
-                error: function (xhr, status, error) {
-                    alert("❌ Error adding stock: " + xhr.responseText);
-                }
-            });
+            $.post("/stock/add", JSON.stringify(stockData), function (response) {
+                // Add the new stock item to the table without refreshing
+                $("#stockTable").append(`
+                    <tr id="row-${response._id}">
+                        <td>${stockData.category}</td>
+                        <td>${stockData.brand}</td>
+                        <td>${stockData.model}</td>
+                        <td>${stockData.size}</td>
+                        <td>${stockData.stock}</td>
+                        <td>${stockData.lowStockThreshold}</td>
+                        <td>
+                            <button onclick="editStock('${response._id}')" class="bg-blue-500 text-white px-2 py-1 rounded">Edit</button>
+                            <button onclick="deleteStock('${response._id}')" class="bg-red-500 text-white px-2 py-1 rounded ml-2">Delete</button>
+                        </td>
+                    </tr>
+                `);
+                stockChecker();
+                $("#addStockForm")[0].reset();
+                showToast("✅ Stock item added successfully!", "success");
+            }).fail(xhr => showToast(`❌ Error adding stock: ${xhr.responseText}`, "error"));
         });
     });
 
-    //before delete shoe
-    function confirmDelete(id) {
-        if (confirm("❗ Are you sure you want to delete this stock?")) {
-            document.getElementById(`delete-form-${id}`).submit();
-        }
-    }
-
-    // 📌 Stock Silme İşlemi (AJAX)
+    // ✅ Function to delete stock item with confirmation
     function deleteStock(id) {
         if (!confirm("❗ Are you sure you want to delete this stock?")) return;
-
-        fetch(`/stock/delete/${id}`, {
-            method: "POST", // 🔥 DELETE yerine POST kullanıyoruz
-            headers: { "Content-Type": "application/json" }
+        fetch(`/stock/delete/${id}`, { method: "POST", headers: { "Content-Type": "application/json" } })
+        .then(response => response.ok ? response.json() : response.json().then(err => { throw new Error(err.message); }))
+        .then(() => {
+            document.getElementById(`row-${id}`).remove();
+            showToast("✅ Stock deleted successfully!", "success");
         })
-        .then(response => {
-            if (!response.ok) {
-                return response.json().then(err => { throw new Error(err.message); });
-            }
-            return response.json();
-        })
-        .then(data => {
-            alert(data.message);
-            document.getElementById(`row-${id}`).remove(); // 🔥 Sayfayı yenilemeden satırı sil
-        })
-        .catch(error => {
-            alert("❌ Error deleting stock: " + error.message);
-        });
+        .catch(error => showToast(`❌ Error deleting stock: ${error.message}`, "error"));
     }
 
-    //edit shoe
+    // ✅ Function to edit stock item in place
     function editStock(id) {
-    let row = document.getElementById(`row-${id}`);
-
-    if (!row) {
-        alert(`❌ Error: No row found with ID row-${id}`);
-        return;
-    }
-
-    let categoryElement = row.querySelector("td:nth-child(1)"); // 🔥 Brand'in bulunduğu sütunu al
-    let brandElement = row.querySelector("td:nth-child(2)"); // 🔥 Brand'in bulunduğu sütunu al
-    let modelElement = row.querySelector("td:nth-child(3)");
-    let sizeElement = row.querySelector("td:nth-child(4)");
-    let stockElement = row.querySelector("td:nth-child(5)");
-    let thresholdElement = row.querySelector("td:nth-child(6)");
-
-    if (!brandElement || !modelElement || !sizeElement || !stockElement || !thresholdElement) {
-        alert("❌ Error: Could not find required table cells.");
-        return;
-    }
-
-    let category = categoryElement.textContent.trim();
-    let brand = brandElement.textContent.trim();
-    let model = modelElement.textContent.trim();
-    let size = sizeElement.textContent.trim();
-    let stock = stockElement.textContent.trim();
-    let threshold = thresholdElement.textContent.trim();
-
-    // 🔥 Hücreleri düzenlenebilir input alanına çevir
-    categoryElement.innerHTML = `<select id="edit-category-${id}" class="border p-1 w-full">
-        <option value="Shoes" ${category === "Shoes" ? "selected" : ""}>Shoes</option>
-        <option value="Jacket" ${category === "Jacket" ? "selected" : ""}>Jacket</option>
-        <option value="Hat" ${category === "Hat" ? "selected" : ""}>Hat</option>
-        <option value="Gloves" ${category === "Gloves" ? "selected" : ""}>Gloves</option>';
-    </select>`;
-    brandElement.innerHTML = `<input type="text" id="edit-brand-${id}" value="${brand}" class="border p-1">`;
-    modelElement.innerHTML = `<input type="text" id="edit-model-${id}" value="${model}" class="border p-1">`;
-    sizeElement.innerHTML = `<input type="text" id="edit-size-${id}" value="${size}" class="border p-1">`;
-    stockElement.innerHTML = `<input type="number" id="edit-stock-${id}" value="${stock}" class="border p-1">`;
-    thresholdElement.innerHTML = `<input type="number" id="edit-threshold-${id}" value="${threshold}" class="border p-1">`;
-
-    // 🔥 Kaydet & İptal Butonları
-    row.querySelector("td:last-child").innerHTML = `
-        <button onclick="saveStock('${id}')" class="bg-green-500 text-white px-2 py-1 rounded">Save</button>
-        <button onclick="cancelEdit('${id}', '${category}', '${brand}', '${model}', '${size}', '${stock}', '${threshold}')" class="bg-gray-500 text-white px-2 py-1 rounded ml-2">Cancel</button>
-    `;
-}
-
-
-//save stocks
-function saveStock(id) {
-    let row = document.getElementById(`row-${id}`);
-
-    if (!row) {
-        console.error(`❌ Error: No row found with ID row-${id}`);
-        return;
-    }
-
-    console.log("🔍 Checking row:", row); // **Hata ayıklamak için ekleyelim**
-
-    // 📌 Hücrelerde input olup olmadığını kontrol edelim
-    let categoryInput = row.querySelector("td:nth-child(1) select");
-    let brandInput = row.querySelector("td:nth-child(2) input");
-    let modelInput = row.querySelector("td:nth-child(3) input");
-    let sizeInput = row.querySelector("td:nth-child(4) input");
-    let stockInput = row.querySelector("td:nth-child(5) input");
-    let thresholdInput = row.querySelector("td:nth-child(6) input");
-
-    if (!categoryInput || !brandInput || !modelInput || !sizeInput || !stockInput || !thresholdInput) {
-        console.error("❌ Error: Some input fields are missing!");
-        return;
-    }
-
-    let updatedStock = {
-        category: categoryInput.value.trim(),
-        brand: brandInput.value.trim(),
-        model: modelInput.value.trim(),
-        size: sizeInput.value.trim(),
-        stock: parseInt(stockInput.value, 10),
-        threshold: parseInt(thresholdInput.value, 10)
-    };
-
-    console.log("🚀 Sending Data:", updatedStock);
-
-    fetch(`/stock/update/${id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(updatedStock)
-    })
-    .then(response => response.json())
-    .then(data => {
-        console.log("✅ Server Response:", data);
-
-        // 📌 Güncellenen verileri sayfada değiştir (inputları kaldır ve yeni değerleri göster)
-        row.querySelector("td:nth-child(1)").innerText = updatedStock.category;
-        row.querySelector("td:nth-child(2)").innerText = updatedStock.brand;
-        row.querySelector("td:nth-child(3)").innerText = updatedStock.model;
-        row.querySelector("td:nth-child(4)").innerText = updatedStock.size;
-        row.querySelector("td:nth-child(5)").innerText = updatedStock.stock;
-        row.querySelector("td:nth-child(6)").innerText = updatedStock.threshold;
-
-        // 📌 Butonları eski haline getir
-        row.querySelector("td:nth-child(7)").innerHTML = `
-            <button onclick="editStock('${id}')" class="bg-blue-500 text-white px-2 py-1 rounded">Edit</button>
-            <button onclick="deleteStock('${id}')" class="bg-red-500 text-white px-2 py-1 rounded ml-2">Delete</button>
-        `;
-
-        showToast("✅ Stock updated successfully!", "success");
-        stockChecker(); // 🔄 Stokları kontrol et
-    })
-    .catch(error => {
-        console.error("❌ Error updating stock:", error);
-        showToast("❌ Error updating stock!", "error");
-    });
-}
-
-    //cancel edit
-    function cancelEdit(id, category, brand, model, size, stock, threshold) {
         let row = document.getElementById(`row-${id}`);
-
-        if (!row) {
-            alert(`❌ Error: No row found with ID row-${id}`);
-            return;
-        }
-
         let cells = row.getElementsByTagName("td");
 
-        if (cells.length < 7) {
-            alert("❌ Error: Incorrect number of table cells.");
-            return;
-        }
+        // Save original data to restore on cancel
+        row.dataset.original = JSON.stringify({
+            category: cells[0].innerText, brand: cells[1].innerText, model: cells[2].innerText,
+            size: cells[3].innerText, stock: cells[4].innerText, threshold: cells[5].innerText
+        });
 
-        // 📌 Hücreleri eski verilerle geri yükle
-        cells[0].textContent = category;
-        cells[1].textContent = brand;
-        cells[2].textContent = model;
-        cells[3].textContent = size;
-        cells[4].textContent = stock;
-        cells[5].textContent = threshold;
+        // Replace table cells with editable inputs
+        cells[0].innerHTML = `<select id="edit-category-${id}" class="border p-1 w-full">
+            <option value="Shoes">Shoes</option>
+            <option value="Jacket">Jacket</option>
+            <option value="Hat">Hat</option>
+            <option value="Gloves">Gloves</option>
+        </select>`;
+        cells[1].innerHTML = `<input type="text" id="edit-brand-${id}" value="${cells[1].innerText}" class="border p-1">`;
+        cells[2].innerHTML = `<input type="text" id="edit-model-${id}" value="${cells[2].innerText}" class="border p-1">`;
+        cells[3].innerHTML = `<input type="text" id="edit-size-${id}" value="${cells[3].innerText}" class="border p-1">`;
+        cells[4].innerHTML = `<input type="number" id="edit-stock-${id}" value="${cells[4].innerText}" class="border p-1">`;
+        cells[5].innerHTML = `<input type="number" id="edit-threshold-${id}" value="${cells[5].innerText}" class="border p-1">`;
 
-        // 📌 Butonları eski haline döndür
+        // Add Save and Cancel buttons
         cells[6].innerHTML = `
-            <button onclick="editStock('${id}')" class="bg-blue-500 text-white px-2 py-1 rounded">Edit</button>
-            <button onclick="deleteStock('${id}')" class="bg-red-500 text-white px-2 py-1 rounded ml-2">Delete</button>
+            <button onclick="saveStock('${id}')" class="bg-green-500 text-white px-2 py-1 rounded">Save</button>
+            <button onclick="cancelEdit('${id}')" class="bg-gray-500 text-white px-2 py-1 rounded ml-2">Cancel</button>
         `;
     }
 
-        let sortDirections = [true, true, true, true, true]; // True: Ascending, False: Descending
-
-        function sortTable(column) {
-            let rows = $("#shoeTable tr").get();
-            let isNumeric = column === 2 || column === 3 || column === 4; // Size, Stock, Threshold numeric
-
-            rows.sort(function (a, b) {
-                let A = $(a).children("td").eq(column).text();
-                let B = $(b).children("td").eq(column).text();
-
-                if (isNumeric) {
-                    A = parseFloat(A) || 0;
-                    B = parseFloat(B) || 0;
-                } else {
-                    A = A.toUpperCase();
-                    B = B.toUpperCase();
-                }
-
-                return sortDirections[column] ? (A > B ? 1 : -1) : (A < B ? 1 : -1);
-            });
-
-            // 🔄 Yönü değiştir
-            sortDirections[column] = !sortDirections[column];
-
-            // 🔄 Tablodaki eski satırları kaldır ve yenileri ekle
-            $("#shoeTable").empty().append(rows);
-
-            // 🔄 Sıralama ikonlarını güncelle
-            updateSortIcons(column);
-        }
-
-        function updateSortIcons(activeColumn) {
-            for (let i = 0; i < 5; i++) {
-                $("#icon-" + i).text(sortDirections[i] ? "⬆️" : "⬇️");
-            }
-        }
-
-        //sorting
-        let sortOrder = {}; // 🔥 Hangi sütunun nasıl sıralandığını takip etmek için
-
-    function sortTable(column) {
-        let rows = $("#stockTable tr").get();
-        
-        // 📌 Eğer sütunun daha önceki sıralaması yoksa veya öncekiyle aynıysa tersine çevir
-        sortOrder[column] = !sortOrder[column];
-
-        rows.sort(function (a, b) {
-            let A = $(a).children("td").eq(getColumnIndex(column)).text();
-            let B = $(b).children("td").eq(getColumnIndex(column)).text();
-
-            // 📌 Bedenler özel sıralama (S, M, L, XL, XXL sırası)
-            const sizeOrder = ["S", "M", "L", "XL", "XXL"];
-            const aIndex = sizeOrder.indexOf(A);
-            const bIndex = sizeOrder.indexOf(B);
-
-            if (column === "size") {
-                if (aIndex !== -1 && bIndex !== -1) {
-                    return sortOrder[column] ? aIndex - bIndex : bIndex - aIndex; // Harf sıralaması (S → XXL)
-                }
-                if (!isNaN(A) && !isNaN(B)) {
-                    return sortOrder[column] ? B - A : A - B; // Sayısal sıralama (büyükten küçüğe veya tersine)
-                }
-            }
-
-            return sortOrder[column] ? A.localeCompare(B) : B.localeCompare(A);
-        });
-
-        $("#stockTable").empty().append(rows);
-    }
-
-    function getColumnIndex(column) {
-        switch (column) {
-            case "category": return 0;
-            case "brand": return 1;
-            case "model": return 2;
-            case "size": return 3;
-            case "stock": return 4;
-            default: return 0;
-        }
-    }
-    //download pdf
-    function downloadPDF() {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
-
-        doc.text("Stock List", 14, 10);
-
-        let rows = [];
-        document.querySelectorAll("#stockTable tr").forEach(row => {
-            let data = [];
-            row.querySelectorAll("td").forEach(cell => data.push(cell.innerText));
-            rows.push(data);
-        });
-
-        doc.autoTable({
-            head: [["Category", "Brand", "Model", "Size", "Stock"]],
-            body: rows,
-            startY: 20
-        });
-
-        doc.save("Stock_List.pdf");
-    }
-    //download excel
-    function downloadExcel() {
-    let table = document.getElementById("stockTable");
-    let rows = [];
-
-    // 📌 Ana tablo başlıklarını ekle
-    rows.push(["Category", "Brand", "Model", "Size", "Stock", "Threshold"]);
-
-    let rowIndex = 2; // Excel'deki ilk veri satırı
-    let rawData = [];
-    
-    table.querySelectorAll("tbody tr").forEach(row => {
-        let rowData = [];
-        let cells = row.querySelectorAll("td");
-
-        for (let i = 0; i < 6; i++) { // ✅ İlk 6 sütunu al
-            rowData.push(cells[i].innerText.trim());
-        }
-
-        rows.push(rowData);
-        rawData.push(rowData);
-        rowIndex++;
-    });
-
-    // 📌 Excel sayfası oluştur
-    let worksheet = XLSX.utils.aoa_to_sheet(rows);
-
-    // 📌 Otomatik genişlik ayarı
-    worksheet["!cols"] = [
-        { wch: 15 }, // Category
-        { wch: 20 }, // Brand
-        { wch: 20 }, // Model
-        { wch: 10 }, // Size
-        { wch: 10 }, // Stock
-        { wch: 12 }  // Threshold
-    ];
-
-    // 📌 Başlıkları kalın ve sarı yap
-    let headerRange = XLSX.utils.decode_range(worksheet["!ref"]);
-    for (let C = headerRange.s.c; C <= headerRange.e.c; C++) {
-        let cellRef = XLSX.utils.encode_cell({ r: 0, c: C });
-        if (!worksheet[cellRef]) continue;
-        worksheet[cellRef].s = {
-            font: { bold: true },
-            alignment: { horizontal: "center" },
-            fill: { fgColor: { rgb: "FFFF00" } } // Sarı arka plan
+    // ✅ Function to save edited stock item
+    function saveStock(id) {
+        let row = document.getElementById(`row-${id}`);
+        let updatedStock = {
+            category: document.getElementById(`edit-category-${id}`).value,
+            brand: document.getElementById(`edit-brand-${id}`).value,
+            model: document.getElementById(`edit-model-${id}`).value,
+            size: document.getElementById(`edit-size-${id}`).value,
+            stock: parseInt(document.getElementById(`edit-stock-${id}`).value, 10),
+            threshold: parseInt(document.getElementById(`edit-threshold-${id}`).value, 10)
         };
+
+        fetch(`/stock/update/${id}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(updatedStock) })
+        .then(response => response.json())
+        .then(() => {
+            // Replace editable fields with updated values
+            row.innerHTML = `
+                <td>${updatedStock.category}</td>
+                <td>${updatedStock.brand}</td>
+                <td>${updatedStock.model}</td>
+                <td>${updatedStock.size}</td>
+                <td>${updatedStock.stock}</td>
+                <td>${updatedStock.threshold}</td>
+                <td>
+                    <button onclick="editStock('${id}')" class="bg-blue-500 text-white px-2 py-1 rounded">Edit</button>
+                    <button onclick="deleteStock('${id}')" class="bg-red-500 text-white px-2 py-1 rounded ml-2">Delete</button>
+                </td>
+            `;
+            showToast("✅ Stock updated successfully!", "success");
+            stockChecker();
+        })
+        .catch(error => showToast(`❌ Error updating stock: ${error.message}`, "error"));
     }
 
-    // 📌 Low Stock ve Restock Needed tablosu oluştur
-    let lowStockRows = [["Low Stock Products"]];
-    lowStockRows.push(["Category", "Brand", "Model", "Size", "Stock", "Threshold"]);
-
-    let restockRows = [["Restock Needed"]];
-    restockRows.push(["Category", "Brand", "Model", "Size", "Stock", "Threshold"]);
-
-    rawData.forEach(row => {
-        let stock = parseInt(row[4]);
-        let threshold = parseInt(row[5]);
-
-        if (stock <= threshold && stock > 0) {
-            lowStockRows.push(row); // 📌 Low Stock olanları ekle
-        }
-        if (stock == 0) {
-            restockRows.push(row); // 📌 Restock gerektirenleri ekle
-        }
-    });
-
-    let lowStockSheet = XLSX.utils.aoa_to_sheet(lowStockRows);
-    let restockSheet = XLSX.utils.aoa_to_sheet(restockRows);
-
-    let workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Stock List");
-    XLSX.utils.book_append_sheet(workbook, lowStockSheet, "Low Stock Products");
-    XLSX.utils.book_append_sheet(workbook, restockSheet, "Restock Needed");
-
-    XLSX.writeFile(workbook, "Stock_Report.xlsx");
-}
-
-    //print table
-    function printTable() {
-        let container = document.querySelector(".stock-table-container");
-
-        if (!container) {
-            alert("❌ Error: Stock table container not found!");
-            return;
-        }
-
-        let printContents = container.innerHTML;
-        let originalContents = document.body.innerHTML;
-
-        document.body.innerHTML = printContents;
-        window.print();
-        document.body.innerHTML = originalContents;
+    // ✅ Function to cancel edit and restore original values
+    function cancelEdit(id) {
+        let row = document.getElementById(`row-${id}`);
+        let originalData = JSON.parse(row.dataset.original);
+        row.innerHTML = `
+            <td>${originalData.category}</td>
+            <td>${originalData.brand}</td>
+            <td>${originalData.model}</td>
+            <td>${originalData.size}</td>
+            <td>${originalData.stock}</td>
+            <td>${originalData.threshold}</td>
+            <td>
+                <button onclick="editStock('${id}')" class="bg-blue-500 text-white px-2 py-1 rounded">Edit</button>
+                <button onclick="deleteStock('${id}')" class="bg-red-500 text-white px-2 py-1 rounded ml-2">Delete</button>
+            </td>
+        `;
     }
 
+    // ✅ Function to show toast notifications
     function showToast(message, type = "success") {
-        let toastContainer = document.getElementById("toast-container");
-
-        let bgColor = type === "success" ? "bg-green-500" : "bg-red-500";
-
-        let toast = document.createElement("div");
-        toast.className = `p-3 text-white rounded-lg shadow-lg ${bgColor}`;
-        toast.innerText = message;
-
-        toastContainer.appendChild(toast);
-
-        // 📌 3 saniye sonra bildirim kaybolsun
-        setTimeout(() => {
-            toast.remove();
-        }, 3000);
+        let toast = $(`<div class="p-3 text-white rounded-lg shadow-lg ${type === "success" ? "bg-green-500" : "bg-red-500"}">${message}</div>`);
+        $("#toast-container").append(toast);
+        setTimeout(() => toast.fadeOut(400, () => toast.remove()), 3000);
     }
-    </script>
-
-</body>
-</html>
+</script>
