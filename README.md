@@ -5,11 +5,17 @@
 ## 📌 **Features**
 
 ✅ **Stock Management** – Add, edit, and delete stock items dynamically
+
 ✅ **Live Threshold Alerts** – Get warnings when stock falls below predefined limits.
+
 ✅ **Category-Based Sorting** – Items are grouped and sorted by category (Shoes, Jackets, Hats, Gloves).
+
 ✅ **Real-Time Editing** – Modify stock details without refreshing the page.
+
 ✅ **Excel & PDF Export** – Download inventory reports with detailed insights.
+
 ✅ **Print-Friendly Reports** – Optimized report generation for printing.
+
 ✅ **Authentication & Authorization** – Role-based access control for safety.
 
 ---
