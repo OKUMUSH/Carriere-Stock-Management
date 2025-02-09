@@ -4,7 +4,7 @@
 
 ## 📌 **Features**
 
-✅ **Stock Management** – Add, edit, and delete stock items dynamically.
+✅ **Stock Management** – Add, edit, and delete stock items dynamically
 ✅ **Live Threshold Alerts** – Get warnings when stock falls below predefined limits.
 ✅ **Category-Based Sorting** – Items are grouped and sorted by category (Shoes, Jackets, Hats, Gloves).
 ✅ **Real-Time Editing** – Modify stock details without refreshing the page.
