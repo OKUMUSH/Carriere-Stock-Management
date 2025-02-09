@@ -53,10 +53,15 @@ Server will start at **`http://localhost:5050`**
 ## 🖥️ **How to Use?**
 
 1️⃣ **Add New Stock**: Enter category, brand, model, size, and stock count.
+
 2️⃣ **Edit Existing Stock**: Modify stock details without page reload.
+
 3️⃣ **Delete Stock**: Remove items from inventory with confirmation.
+
 4️⃣ **Monitor Low Stock**: Items below threshold appear in a separate table.
+
 5️⃣ **Download Reports**: Export inventory data as **Excel or PDF**.
+
 6️⃣ **Print Reports**: Cleanly formatted reports for easy printing.
 
 ---
@@ -86,7 +91,6 @@ Server will start at **`http://localhost:5050`**
 ## 🛠️ **Technologies Used**
 - **Backend**: Node.js, Express.js, MongoDB
 - **Frontend**: EJS, Tailwind CSS, jQuery, AJAX
-- **Authentication**: JWT, Express-session
 - **Data Export**: XLSX (Excel), jsPDF (PDF)
 
 ---
