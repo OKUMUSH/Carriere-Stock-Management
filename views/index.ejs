@@ -9,41 +9,49 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.6.0/jspdf.plugin.autotable.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <style>
-        /* 📌 Mobil Uyum için Scrollable Table */
-        .stock-table-container {
-            overflow-x: auto;
-        }
-        
-        /* 📌 Threshold seviyelerine göre renk */
-        .low-stock {
-            background-color: #ffcccb !important; /* 🔴 Kritik Stok (Red) */
-        }
-        .near-threshold {
-            background-color: #fff3cd !important; /* 🟡 Yakın Threshold (Yellow) */
-        }
-
-        /* 📌 Tablo Stili */
-        table {
+    <style>/* 📌 Masaüstü İçin Standart Tablo */
+        .desktop-table {
             width: 100%;
             border-collapse: collapse;
-            min-width: 600px;
+            table-layout: fixed;
         }
-        th, td {
+        
+        .desktop-table th, .desktop-table td {
             border: 1px solid #ddd;
-            padding: 8px;
+            padding: 10px;
             text-align: center;
+            vertical-align: middle;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
         
-        /* 📌 Edit modunda input taşmasını önle */
-        td input, td select {
-            width: 100%;
-            max-width: 120px;
-            padding: 5px;
-            font-size: 14px;
+        /* 📌 Mobilde Tabloyu Listeye Çevir */
+        @media (max-width: 768px) {
+            .desktop-table {
+                display: none; /* Mobilde gizle */
+            }
+            .mobile-table {
+                display: block;
+            }
+        }
+        
+        .mobile-table {
+            display: none; /* Masaüstünde gizle */
+        }
+        
+        .mobile-item {
+            background: white;
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-bottom: 10px;
+        }
+        
+        .mobile-item div {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
         }
     </style>
 </head>
@@ -78,9 +86,9 @@
         </form>
 
         <!-- 📋 Stok Listesi -->
-        <div class="stock-table-container bg-white p-4 rounded-lg shadow">
-            <h2 class="text-xl font-semibold mb-2">📦 Stock List</h2>
-            <table>
+        <div class="stock-table-container max-w-6xl mx-auto bg-white shadow-lg rounded-lg p-6">
+            <h1 class="text-3xl font-bold mb-4 text-center">📦 Stock List</h2>
+            <table class="desktop-table">
                 <thead>
                     <tr class="bg-gray-200">
                         <th onclick="sortTable('category')">Category ⬍</th>
@@ -110,7 +118,10 @@
                 </tbody>
             </table>
         </div>
+        <!-- 📋 Mobil Görünüm İçin Liste -->
+    <div class="mobile-table" id="mobileStockList"></div>
 
+    
         <div class="mt-4 flex justify-end gap-2">
             <button onclick="downloadPDF()" class="bg-red-500 text-white px-4 py-2 rounded">📄 Download PDF</button>
             <button onclick="downloadExcel()" class="bg-green-500 text-white px-4 py-2 rounded">📊 Download Excel</button>
@@ -163,7 +174,32 @@
     // Run stock check on page load
     document.addEventListener("DOMContentLoaded", () => {
         stockChecker();
+        renderMobileTable();
     });
+    function renderMobileTable() {
+        let mobileList = document.getElementById("mobileStockList");
+        mobileList.innerHTML = "";
+        
+        document.querySelectorAll("#stockTable tr").forEach(row => {
+            let cells = row.getElementsByTagName("td");
+            let stockId = row.id.split("-")[1];
+            let mobileItem = `
+                <div class="mobile-item">
+                    <div><strong>Category:</strong> <span>${cells[0].innerText}</span></div>
+                    <div><strong>Brand:</strong> <span>${cells[1].innerText}</span></div>
+                    <div><strong>Model:</strong> <span>${cells[2].innerText}</span></div>
+                    <div><strong>Size:</strong> <span>${cells[3].innerText}</span></div>
+                    <div><strong>Stock:</strong> <span>${cells[4].innerText}</span></div>
+                    <div class="threshold-column"><strong>Threshold:</strong> <span>${cells[5].innerText}</span></div>
+                    <div class="actions-column">
+                        <button onclick="editStock('${stockId}')" class="bg-blue-500 text-white px-2 py-1 rounded">Edit</button>
+                        <button onclick="deleteStock('${stockId}')" class="bg-red-500 text-white px-2 py-1 rounded ml-2">Delete</button>
+                    </div>
+                </div>
+            `;
+            mobileList.innerHTML += mobileItem;
+        });
+    }
 
     // ✅ Function to check low stock items and display alerts
     function stockChecker() {
