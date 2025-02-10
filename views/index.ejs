@@ -25,34 +25,53 @@
             overflow: hidden;
             text-overflow: ellipsis;
         }
-        
-        /* 📌 Mobilde Tabloyu Listeye Çevir */
-        @media (max-width: 768px) {
-            .desktop-table {
-                display: none; /* Mobilde gizle */
-            }
-            .mobile-table {
-                display: block;
-            }
-        }
-        
-        .mobile-table {
-            display: none; /* Masaüstünde gizle */
-        }
-        
-        .mobile-item {
-            background: white;
-            padding: 10px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            margin-bottom: 10px;
-        }
-        
-        .mobile-item div {
-            display: flex;
-            justify-content: space-between;
-            padding: 5px 0;
-        }
+        @media screen and (max-width: 768px) {
+    table {
+        display: none; /* Masaüstü için tabloyu sakla */
+    }
+
+    .mobile-stock-list {
+        display: block;
+    }
+
+    .stock-card {
+        border: 1px solid #ddd;
+        padding: 10px;
+        margin-bottom: 10px;
+        border-radius: 10px;
+        background-color: #fff;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .stock-card h3 {
+        font-size: 18px;
+        font-weight: bold;
+        color: #333;
+    }
+
+    .stock-card p {
+        font-size: 14px;
+        color: #666;
+    }
+
+    .stock-card .actions {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 10px;
+    }
+
+    .stock-card button {
+        font-size: 14px;
+        padding: 6px 12px;
+    }
+}
+
+/* Masaüstü görünümde kartları gizle */
+@media screen and (min-width: 769px) {
+    .mobile-stock-list {
+        display: none;
+    }
+}
     </style>
 </head>
 <body class="bg-gray-100 p-6">
@@ -118,8 +137,21 @@
                 </tbody>
             </table>
         </div>
-        <!-- 📋 Mobil Görünüm İçin Liste -->
-    <div class="mobile-table" id="mobileStockList"></div>
+        <<!-- 📱 Mobil İçin Stock List -->
+    <div class="mobile-stock-list">
+        <% stocks.forEach(stock => { %>
+            <div class="stock-card">
+                <h3><%= stock.category %> - <%= stock.brand %> (<%= stock.model %>)</h3>
+                <p><strong>Size:</strong> <%= stock.size %></p>
+                <p><strong>Stock:</strong> <%= stock.stock %> | <strong>Threshold:</strong> <%= stock.lowStockThreshold %></p>
+                
+                <div class="actions">
+                    <button onclick="editStock('<%= stock._id %>')" class="bg-blue-500 text-white px-2 py-1 rounded">Edit</button>
+                    <button onclick="deleteStock('<%= stock._id %>')" class="bg-red-500 text-white px-2 py-1 rounded">Delete</button>
+                </div>
+            </div>
+        <% }) %>
+    </div>
 
     
         <div class="mt-4 flex justify-end gap-2">
