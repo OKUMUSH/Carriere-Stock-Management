@@ -301,6 +301,61 @@
             }).fail(xhr => showToast(`❌ Error adding stock: ${xhr.responseText}`, "error"));
         });
     });
+    function saveStock(id) {
+        let row = document.getElementById(`row-${id}`);
+        let card = document.getElementById(`card-${id}`);
+
+        let isMobile = window.innerWidth <= 768;
+
+        if (isMobile && card) {
+            // 📌 Mobil görünümde düzenlenmiş verileri al
+            let updatedStock = {
+                category: document.getElementById(`edit-category-${id}`).value.trim(),
+                brand: document.getElementById(`edit-brand-${id}`).value.trim(),
+                model: document.getElementById(`edit-model-${id}`).value.trim(),
+                size: document.getElementById(`edit-size-${id}`).value.trim(),
+                stock: parseInt(document.getElementById(`edit-stock-${id}`).value, 10),
+                threshold: parseInt(document.getElementById(`edit-threshold-${id}`).value, 10)
+            };
+
+            console.log("🚀 Updating Stock (Mobile):", updatedStock);
+
+            // 📌 Güncellenen veriyi sunucuya gönder
+            fetch(`/stock/update/${id}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(updatedStock)
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log("✅ Server Response:", data);
+
+                // 📌 Güncellenen verileri kartta göster
+                card.querySelector(".stock-category").innerText = updatedStock.category;
+                card.querySelector(".stock-brand").innerText = updatedStock.brand;
+                card.querySelector(".stock-model").innerText = updatedStock.model;
+                card.querySelector(".stock-size").innerText = updatedStock.size;
+                card.querySelector(".stock-stock").innerText = updatedStock.stock;
+                card.querySelector(".stock-threshold").innerText = updatedStock.threshold;
+
+                // 📌 Save & Cancel butonlarını geri değiştir
+                card.querySelector(".actions").innerHTML = `
+                    <button onclick="editStock('${id}')" class="bg-blue-500 text-white px-2 py-1 rounded">Edit</button>
+                    <button onclick="deleteStock('${id}')" class="bg-red-500 text-white px-2 py-1 rounded ml-2">Delete</button>
+                `;
+
+                showToast("✅ Stock updated successfully!", "success");
+            })
+            .catch(error => {
+                console.error("❌ Error updating stock:", error);
+                showToast("❌ Error updating stock!", "error");
+            });
+
+        } else if (row) {
+            // 📌 Masaüstü için eski `saveStock` fonksiyonu çalıştır
+            saveStockTable(id);
+        }
+    }
 
     // ✅ Function to delete stock item with confirmation
     function deleteStock(id) {
@@ -395,7 +450,7 @@
     }
 
     // ✅ Function to save edited stock item
-    function saveStock(id) {
+    function saveStockTable(id) {
         let row = document.getElementById(`row-${id}`);
         let updatedStock = {
             category: document.getElementById(`edit-category-${id}`).value,
@@ -427,9 +482,35 @@
         })
         .catch(error => showToast(`❌ Error updating stock: ${error.message}`, "error"));
     }
+    function cancelEdit(id, category, brand, model, size, stock, threshold) {
+        let row = document.getElementById(`row-${id}`);
+        let card = document.getElementById(`card-${id}`);
+
+        let isMobile = window.innerWidth <= 768;
+
+        if (isMobile && card) {
+            // 📌 Mobil görünümde eski veriyi geri yükle
+            card.querySelector(".stock-category").innerText = category;
+            card.querySelector(".stock-brand").innerText = brand;
+            card.querySelector(".stock-model").innerText = model;
+            card.querySelector(".stock-size").innerText = size;
+            card.querySelector(".stock-stock").innerText = stock;
+            card.querySelector(".stock-threshold").innerText = threshold;
+
+            // 📌 Butonları geri yükle
+            card.querySelector(".actions").innerHTML = `
+                <button onclick="editStock('${id}')" class="bg-blue-500 text-white px-2 py-1 rounded">Edit</button>
+                <button onclick="deleteStock('${id}')" class="bg-red-500 text-white px-2 py-1 rounded ml-2">Delete</button>
+            `;
+
+        } else if (row) {
+            // 📌 Masaüstü için eski `cancelEdit` fonksiyonu çalıştır
+            cancelEditTable(id, category, brand, model, size, stock, threshold);
+        }
+    }
 
     // ✅ Function to cancel edit and restore original values
-    function cancelEdit(id) {
+    function cancelEditTable(id) {
         let row = document.getElementById(`row-${id}`);
         let originalData = JSON.parse(row.dataset.original);
         row.innerHTML = `
