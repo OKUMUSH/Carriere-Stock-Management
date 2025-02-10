@@ -137,17 +137,21 @@
                 </tbody>
             </table>
         </div>
-        <<!-- 📱 Mobil İçin Stock List -->
+        <!-- 📱 Mobil İçin Stock List -->
     <div class="mobile-stock-list">
         <% stocks.forEach(stock => { %>
-            <div class="stock-card">
-                <h3><%= stock.category %> - <%= stock.brand %> (<%= stock.model %>)</h3>
-                <p><strong>Size:</strong> <%= stock.size %></p>
-                <p><strong>Stock:</strong> <%= stock.stock %> | <strong>Threshold:</strong> <%= stock.lowStockThreshold %></p>
+            <div class="stock-card" id="card-<%= stock._id %>">
+                <h3><span class="stock-category"><%= stock.category %></span> - 
+                    <span class="stock-brand"><%= stock.brand %></span> 
+                    (<span class="stock-model"><%= stock.model %></span>)</h3>
+                <p><strong>Size:</strong> <span class="stock-size"><%= stock.size %></span></p>
+                <p><strong>Stock:</strong> <span class="stock-stock"><%= stock.stock %></span> 
+                    | <strong>Threshold:</strong> <span class="stock-threshold"><%= stock.lowStockThreshold %></span>
+                </p>
                 
                 <div class="actions">
                     <button onclick="editStock('<%= stock._id %>')" class="bg-blue-500 text-white px-2 py-1 rounded">Edit</button>
-                    <button onclick="deleteStock('<%= stock._id %>')" class="bg-red-500 text-white px-2 py-1 rounded">Delete</button>
+                    <button onclick="deleteStock('<%= stock._id %>')" class="bg-red-500 text-white px-2 py-1 rounded ml-2">Delete</button>
                 </div>
             </div>
         <% }) %>
@@ -309,9 +313,58 @@
         })
         .catch(error => showToast(`❌ Error deleting stock: ${error.message}`, "error"));
     }
-
-    // ✅ Function to edit stock item in place
     function editStock(id) {
+        let row = document.getElementById(`row-${id}`);
+        let card = document.getElementById(`card-${id}`);
+
+        if (!row && !card) {
+            alert(`❌ Error: No stock item found with ID ${id}`);
+            return;
+        }
+
+        let isMobile = window.innerWidth <= 768;
+
+        if (isMobile && card) {
+            // 📌 Mobil görünümde kart içindeki verileri düzenlenebilir yap
+            let categoryElement = card.querySelector(".stock-category");
+            let brandElement = card.querySelector(".stock-brand");
+            let modelElement = card.querySelector(".stock-model");
+            let sizeElement = card.querySelector(".stock-size");
+            let stockElement = card.querySelector(".stock-stock");
+            let thresholdElement = card.querySelector(".stock-threshold");
+
+            let category = categoryElement.innerText.trim();
+            let brand = brandElement.innerText.trim();
+            let model = modelElement.innerText.trim();
+            let size = sizeElement.innerText.trim();
+            let stock = stockElement.innerText.trim();
+            let threshold = thresholdElement.innerText.trim();
+
+            // 📌 Kart içindeki metinleri input alanlarına çevir
+            categoryElement.innerHTML = `<select id="edit-category-${id}" class="border p-1 w-full">
+                <option value="Shoes" ${category === "Shoes" ? "selected" : ""}>Shoes</option>
+                <option value="Jacket" ${category === "Jacket" ? "selected" : ""}>Jacket</option>
+                <option value="Hat" ${category === "Hat" ? "selected" : ""}>Hat</option>
+                <option value="Gloves" ${category === "Gloves" ? "selected" : ""}>Gloves</option>
+            </select>`;
+            brandElement.innerHTML = `<input type="text" id="edit-brand-${id}" value="${brand}" class="border p-1 w-full">`;
+            modelElement.innerHTML = `<input type="text" id="edit-model-${id}" value="${model}" class="border p-1 w-full">`;
+            sizeElement.innerHTML = `<input type="text" id="edit-size-${id}" value="${size}" class="border p-1 w-full">`;
+            stockElement.innerHTML = `<input type="number" id="edit-stock-${id}" value="${stock}" class="border p-1 w-full">`;
+            thresholdElement.innerHTML = `<input type="number" id="edit-threshold-${id}" value="${threshold}" class="border p-1 w-full">`;
+
+            // 📌 Kaydet ve İptal Butonları
+            card.querySelector(".actions").innerHTML = `
+                <button onclick="saveStock('${id}')" class="bg-green-500 text-white px-2 py-1 rounded">Save</button>
+                <button onclick="cancelEdit('${id}', '${category}', '${brand}', '${model}', '${size}', '${stock}', '${threshold}')" class="bg-gray-500 text-white px-2 py-1 rounded ml-2">Cancel</button>
+            `;
+        } else if (row) {
+            // 📌 Masaüstü için eski editStock çalışsın
+            editStockTable(id);
+        }
+    }
+    // ✅ Function to edit stock item in place
+    function editStockTable(id) {
         let row = document.getElementById(`row-${id}`);
         let cells = row.getElementsByTagName("td");
 
