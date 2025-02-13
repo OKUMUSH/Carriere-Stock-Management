@@ -1,81 +1,78 @@
-# Carriere Stock Management System
+# Stock Management System
 
-## 🚀 Live Demo
-[🔗 Live Example](https://cuddly-space-enigma-97jg7pwpqxwjhxj49-5050.app.github.dev/)
+## Overview
+A web-based stock management system for tracking inventory levels, alerts, and modifications in real time.
 
-## 📖 About the Project
-Carriere Stock Management System is a web-based inventory tracking solution for managing shoes and other warehouse items efficiently. It provides real-time stock tracking, low-stock alerts, and export features.
+## Features
+✅ Real-time low stock alerts (auto-updates colors & warnings)  
+✅ Desktop & Mobile-friendly UI (tables on desktop, cards on mobile)  
+✅ Live Editing (update stock, auto-refresh UI, save/cancel options)  
+✅ AJAX-based operations (add, edit, delete stock without page reload)  
+✅ PDF & Excel export, sorting, and printing  
+✅ Alphabetical sorting of stock list  
+✅ Test page for quick API validation  
+✅ **Live preview of offline version**  
 
-## 🛠 Features
-- 📦 **Stock Management**: Add, edit, and delete inventory items.
-- 📉 **Low Stock Alerts**: Automatically highlights items below the threshold.
-- 📑 **Export Options**: Download stock reports in **PDF** or **Excel** format.
-- 🔍 **Sorting & Searching**: Sort and filter items easily.
-- 🖨 **Print Reports**: Print stock lists directly from the interface.
-- 📊 **Real-time Updates**: Live tracking of stock changes.
+## Live Examples
+🔗 **[Live Demo (Database Version)](index.ejs)**  
+🔗 **[Live Demo (Offline Version)](test.html)**  
 
-## 📋 Installation
-### 1️⃣ Clone the repository
+## Tech Stack
+- **Frontend:** TailwindCSS, jQuery
+- **Backend:** Node.js, Express.js, MongoDB (for the database version)
+- **Database:** MongoDB with Mongoose ORM (for the database version)
+- **Storage:** In-memory JavaScript array (for the offline version)
+- **Real-Time Communication:** WebSockets (Socket.io)
+
+## Installation
 ```sh
-git clone https://github.com/OKUMUSH/Carriere-Stock-Management.git
-cd Carriere-Stock-Management
-```
+# Clone the repository
+git clone https://github.com/YOUR_USERNAME/stock-management-system.git
+cd stock-management-system
 
-### 2️⃣ Install dependencies
-```sh
+# Install dependencies
 npm install
+
+# Start the server
+node server.js
 ```
 
-### 3️⃣ Set up MongoDB
-Ensure MongoDB is installed and running on **localhost:27017**. If using a remote database, update the connection string in `.env`.
+## Running Tests
+To test API functionality, open the test page:
+- Start the server
+- Open `test.html` in a browser (Offline Mode) or `index.ejs` for the full database version
 
-### 4️⃣ Start the server
-```sh
-npm run dev
+## API Routes (Database Version)
+### Stock Operations
+#### Fetch All Stock
+```http
+GET /stock
+```
+#### Add Stock
+```http
+POST /stock
+Content-Type: application/json
+{
+  "itemName": "Apples",
+  "quantity": 50,
+  "threshold": 10,
+  "updatedBy": "Admin"
+}
+```
+#### Update Stock
+```http
+PUT /update-stock/:id
+Content-Type: application/json
+{
+  "quantity": 30,
+  "threshold": 5,
+  "updatedBy": "Admin"
+}
+```
+#### Delete Stock
+```http
+DELETE /delete-stock/:id
 ```
 
-The app will be available at `http://localhost:5050`.
-
-## 🛠 Technologies Used
-- **Node.js** + **Express.js** (Backend)
-- **MongoDB** + **Mongoose** (Database)
-- **EJS** (Templating Engine)
-- **Tailwind CSS** (Styling)
-- **jQuery** (AJAX & DOM Manipulation)
-- **jsPDF & xlsx.js** (PDF & Excel Exporting)
-
-## 📌 API Routes
-| Route | Method | Description |
-|--------|--------|----------------|
-| `/stock/add` | `POST` | Add a new stock item |
-| `/stock/update/:id` | `PUT` | Update stock details |
-| `/stock/delete/:id` | `POST` | Delete a stock item |
-| `/stock/list` | `GET` | Retrieve all stock items |
-
-## 📜 License
-This project is licensed under the **MIT License**. Feel free to contribute and improve!
-
----
-### 🛠 Contributing
-Pull requests are welcome! For major changes, please open an issue first to discuss what you would like to change.
-
-## 🖥️ **How to Use?**
-
-1️⃣ **Add New Stock**: Enter category, brand, model, size, and stock count.
-
-2️⃣ **Edit Existing Stock**: Modify stock details without page reload.
-
-3️⃣ **Delete Stock**: Remove items from inventory with confirmation.
-
-4️⃣ **Monitor Low Stock**: Items below threshold appear in a separate table.
-
-5️⃣ **Download Reports**: Export inventory data as **Excel or PDF**.
-
-6️⃣ **Print Reports**: Cleanly formatted reports for easy printing.
-For questions or feature requests, feel free to reach out!
-
----
-📌 **Author**: OKUMUSH
-
-✉ **Contact**: [GitHub](https://github.com/OKUMUSH)
-
+## License
+This project is licensed under the MIT License.

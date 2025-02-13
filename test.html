@@ -1,0 +1,125 @@
+<!-- views/index.ejs (Standalone Version - No Database Required) -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Management</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-5">
+    <div class="max-w-5xl mx-auto bg-white p-6 rounded-lg shadow-md">
+        <h2 class="text-2xl font-bold mb-4 text-center">Stock Management</h2>
+
+        <!-- Add New Stock -->
+        <div class="bg-gray-200 p-4 rounded-lg mb-6 shadow-md">   
+            <h3 class="text-lg font-semibold mb-2">Add New Stock</h3>
+            <form id="add-stock-form" class="flex flex-wrap gap-2 items-center justify-center w-full">
+                <input type="text" id="itemName" placeholder="Item Name" required class="p-2 border rounded w-1/4">
+                <input type="number" id="quantity" placeholder="Quantity" required class="p-2 border rounded w-1/4">
+                <input type="number" id="threshold" placeholder="Threshold" required class="p-2 border rounded w-1/4">
+                <input type="text" id="updatedBy" placeholder="Created By" required class="p-2 border rounded w-1/4">
+                <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded">Add Stock</button>
+            </form>
+        </div>
+        
+        <!-- Filters -->
+        <div class="mb-4 flex flex-wrap gap-2 justify-between">
+            <input type="text" id="search" placeholder="Search item..." class="p-2 border rounded w-1/3">
+            <select id="filter-stock" class="p-2 border rounded w-1/3">
+                <option value="all">All</option>
+                <option value="low">Low Stock</option>
+                <option value="critical">Critical Stock</option>
+            </select>
+        </div>
+        
+        <!-- Stock Table -->
+        <div class="overflow-x-auto">
+            <table class="w-full border-collapse border border-gray-300">
+                <thead>
+                    <tr class="bg-gray-200">
+                        <th class="border p-2">Item</th>
+                        <th class="border p-2">Quantity</th>
+                        <th class="border p-2">Threshold</th>
+                        <th class="border p-2">Last Updated By</th>
+                        <th class="border p-2">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="stock-list"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        let stockData = [];
+
+        // Add new stock
+        $("#add-stock-form").submit(function(event) {
+            event.preventDefault();
+            let newStock = {
+                itemName: $("#itemName").val(),
+                quantity: parseInt($("#quantity").val()),
+                threshold: parseInt($("#threshold").val()),
+                updatedBy: $("#updatedBy").val()
+            };
+            stockData.push(newStock);
+            updateStockTable();
+            $("#add-stock-form")[0].reset();
+        });
+
+        // Update stock table
+        function updateStockTable() {
+            $("#stock-list").empty();
+            stockData.sort((a, b) => a.itemName.localeCompare(b.itemName));
+            stockData.forEach((stock, index) => {
+                $("#stock-list").append(`
+                    <tr class="border" data-stock="${stock.quantity}" data-threshold="${stock.threshold}" data-name="${stock.itemName.toLowerCase()}">
+                        <td class="border p-2">${stock.itemName}</td>
+                        <td class="border p-2">${stock.quantity}</td>
+                        <td class="border p-2">${stock.threshold}</td>
+                        <td class="border p-2">${stock.updatedBy}</td>
+                        <td class="border p-2 flex gap-2">
+                            <button onclick="deleteStock(${index})" class="bg-red-500 text-white px-2 py-1 rounded">Delete</button>
+                        </td>
+                    </tr>
+                `);
+            });
+        }
+
+        // Delete stock
+        function deleteStock(index) {
+            stockData.splice(index, 1);
+            updateStockTable();
+        }
+
+        // Filtering and Searching
+        $(document).ready(function() {
+            $('#search').on('input', function() {
+                let value = $(this).val().toLowerCase();
+                $('#stock-list tr').filter(function() {
+                    $(this).toggle($(this).data('name').includes(value));
+                });
+            });
+            
+            $('#filter-stock').on('change', function() {
+                let filter = $(this).val();
+                $('#stock-list tr').each(function() {
+                    let stock = parseInt($(this).attr('data-stock')) || 0;
+                    let threshold = parseInt($(this).attr('data-threshold')) || 0;
+                    if (filter === 'all') {
+                        $(this).show();
+                    } else if (filter === 'low' && stock <= threshold) {
+                        $(this).show();
+                    } else if (filter === 'critical' && stock === 0) {
+                        $(this).show();
+                    } else {
+                        $(this).hide();
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
