@@ -14,8 +14,8 @@ A web-based stock management system for tracking inventory levels, alerts, and m
 ✅ **Live preview of offline version**  
 
 ## Live Examples
-🔗 **[Live Demo (Database Version)](index.ejs)**  
-🔗 **[Live Demo (Offline Version)](test.html)**  
+🔗 **[Live Demo (Database Version)](index.ejs){:target="_blank"}**  
+🔗 **[Live Demo (Offline Version)](test.html){:target="_blank"}**  
 
 ## Tech Stack
 - **Frontend:** TailwindCSS, jQuery
