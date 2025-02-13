@@ -5,7 +5,7 @@ A web-based stock management system for tracking inventory levels, alerts, and m
 
 ## Features
 ✅ Real-time low stock alerts (auto-updates colors & warnings)  
-✅ Desktop & Mobile-friendly UI
+✅ Desktop & Mobile-friendly UI 
 ✅ Live Editing (update stock, auto-refresh UI, save/cancel options)  
 ✅ AJAX-based operations (add, edit, delete stock without page reload)  
 ✅ Alphabetical sorting of stock list  
