@@ -5,17 +5,23 @@ A web-based stock management system for tracking inventory levels, alerts, and m
 
 ## Features
 ✅ Real-time low stock alerts (auto-updates colors & warnings)  
+
 ✅ Desktop & Mobile-friendly UI 
+
 ✅ Live Editing (update stock, auto-refresh UI, save/cancel options)  
+
 ✅ AJAX-based operations (add, edit, delete stock without page reload)  
+
 ✅ Alphabetical sorting of stock list  
+
 ✅ Test page for quick API validation  
+
 ✅ **Live preview of offline version**  
 
 ## Live Examples
 🔗 **[Live Demo (Offline Version)](test.html){:target="_blank"}**  
 
-## Tech Stack
+## Tech Stackß
 - **Frontend:** TailwindCSS, jQuery
 - **Backend:** Node.js, Express.js, MongoDB (for the database version)
 - **Database:** MongoDB with Mongoose ORM (for the database version)
