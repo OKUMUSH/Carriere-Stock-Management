@@ -1,73 +1,126 @@
-const express = require("express");
-const mongoose = require("mongoose");
-const cors = require("cors"); // ✅ CORS hatasını önlemek için ekle
-const Stock = require("./models/Stock"); // ✅ Stock Modelini Dahil Et
+// server.js (Stock Management System with History & Undo)
+
+const express = require('express');
+const http = require('http');
+const socketIo = require('socket.io');
+const mongoose = require('mongoose');
+const bodyParser = require('body-parser');
+const path = require('path');
+const moment = require('moment');
 
 const app = express();
-app.set("view engine", "ejs");
-app.use(express.urlencoded({ extended: true }));
+const server = http.createServer(app);
+const io = socketIo(server);
+
+// Middleware
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.json());
-app.use(express.static("public"));
-app.use(cors()); // ✅ CORS Middleware kullanımı
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
+app.use(express.static(path.join(__dirname, 'public')));
 
-// 📌 MongoDB Bağlantısı
-mongoose
-  .connect("mongodb://localhost:27017/shoe-stock", { useNewUrlParser: true, useUnifiedTopology: true })
-  .then(() => console.log("✅ Connected to MongoDB"))
-  .catch(err => console.log("❌ MongoDB Connection Error:", err));
-
-// 📌 Özel Sıralama Mantığı
-app.get("/", async (req, res) => {
-    try {
-        let stocks = await Stock.find();
-
-        // 📌 Önce kategoriye göre sıralama, sonra brand, sonra model
-        stocks.sort((a, b) => {
-            // 1️⃣ Kategoriye göre sıralama
-            if (a.category !== b.category) {
-                return a.category.localeCompare(b.category);
-            }
-
-            // 2️⃣ Marka sıralaması (Alfabetik)
-            if (a.brand !== b.brand) {
-                return a.brand.localeCompare(b.brand);
-            }
-
-            // 3️⃣ Model sıralaması (Alfabetik)
-            if (a.model !== b.model) {
-                return a.model.localeCompare(b.model);
-            }
-
-            // 4️⃣ Beden (Size) sıralaması: Harfli olanlar (S, M, L, XL, XXL) özel sıralama, sayılar büyükten küçüğe
-            const sizeOrder = ["S", "M", "L", "XL", "XXL"];
-            const aSize = a.size.toString();
-            const bSize = b.size.toString();
-
-            const aIndex = sizeOrder.indexOf(aSize);
-            const bIndex = sizeOrder.indexOf(bSize);
-
-            if (aIndex !== -1 && bIndex !== -1) {
-                return aIndex - bIndex; // Harfli beden sıralaması
-            }
-
-            if (!isNaN(a.size) && !isNaN(b.size)) {
-                return b.size - a.size; // Sayısal beden sıralaması (büyükten küçüğe)
-            }
-
-            return aSize.localeCompare(bSize); // Diğer tüm durumlar için alfabetik sıralama
-        });
-
-        console.log("📋 Loaded Stocks:", stocks);
-        res.render("index", { stocks });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
+// Connect to MongoDB
+mongoose.connect('mongodb://localhost:27017/stock_management', {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
 });
 
-// 📌 Stok Yönetim API'sini Kullan
-// 📌 Stock Routes Kullanımı
-const stockRoutes = require("./routes/stock");
-app.use("/stock", stockRoutes);
+const StockSchema = new mongoose.Schema({
+    itemName: String,
+    quantity: Number,
+    threshold: Number,
+    lastUpdated: { type: Date, default: Date.now },
+    updatedBy: String,
+});
 
-// 📌 Sunucuyu Başlat
-app.listen(5050, () => console.log("🚀 Server is running on port 5050"));
+const StockHistorySchema = new mongoose.Schema({
+    itemId: mongoose.Schema.Types.ObjectId,
+    itemName: String,
+    change: String,
+    changedBy: String,
+    timestamp: { type: Date, default: Date.now }
+});
+
+const Stock = mongoose.model('Stock', StockSchema);
+const StockHistory = mongoose.model('StockHistory', StockHistorySchema);
+
+// Auto-remove logs older than 6 months
+setInterval(async () => {
+    const sixMonthsAgo = moment().subtract(6, 'months').toDate();
+    await StockHistory.deleteMany({ timestamp: { $lt: sixMonthsAgo } });
+}, 24 * 60 * 60 * 1000); // Runs daily
+
+// Routes
+app.get('/', async (req, res) => {
+    const stocks = await Stock.find();
+    const history = await StockHistory.find().sort({ timestamp: -1 });
+    res.render('index', { stocks, history });
+});
+
+app.post('/stock', async (req, res) => {
+    const { itemName, quantity, threshold, updatedBy } = req.body;
+    const stock = new Stock({ itemName, quantity, threshold, updatedBy });
+    await stock.save();
+
+    const history = new StockHistory({
+        itemId: stock._id,
+        itemName: itemName,
+        change: ` Added new stock with quantity ${quantity} and threshold ${threshold}`,
+        changedBy: updatedBy,
+    });
+    await history.save();
+
+    io.emit('stock_updated', stock);
+    res.redirect('/');
+});
+
+app.post('/update-stock/:id', async (req, res) => {
+    const { quantity, threshold, updatedBy } = req.body;
+    const stock = await Stock.findById(req.params.id);
+    if (stock) {
+        const oldQuantity = stock.quantity;
+        const oldThreshold = stock.threshold;
+        stock.quantity = quantity;
+        stock.threshold = threshold;
+        stock.updatedBy = updatedBy;
+        await stock.save();
+        
+        const history = new StockHistory({
+            itemId: stock._id,
+            itemName: stock.itemName,
+            change: `Updated quantity from ${oldQuantity} to ${quantity}, threshold from ${oldThreshold} to ${threshold}`,
+            changedBy: updatedBy,
+        });
+        await history.save();
+        
+        io.emit('stock_updated', stock);
+    }
+    res.redirect('/');
+});
+
+app.post('/delete-stock/:id', async (req, res) => {
+    await Stock.findByIdAndDelete(req.params.id);
+    io.emit('stock_deleted', req.params.id);
+    res.redirect('/');
+});
+
+// Get stock history
+app.get('/history', async (req, res) => {
+    const history = await StockHistory.find().sort({ timestamp: -1 });
+    res.json(history);
+});
+
+// Manual delete history
+app.post('/delete-history/:id', async (req, res) => {
+    await StockHistory.deleteOne({ _id: req.params.id });
+    res.redirect('/');
+});
+
+// WebSocket Connection
+io.on('connection', (socket) => {
+    console.log('Client connected');
+    socket.on('disconnect', () => console.log('Client disconnected'));
+});
+
+const PORT = 8080;
+server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
