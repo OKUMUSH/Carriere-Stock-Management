@@ -1,5 +1,3 @@
-<!-- views/index.ejs (Standalone Version - No Database Required) -->
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -76,16 +74,37 @@
             stockData.forEach((stock, index) => {
                 $("#stock-list").append(`
                     <tr class="border" data-stock="${stock.quantity}" data-threshold="${stock.threshold}" data-name="${stock.itemName.toLowerCase()}">
-                        <td class="border p-2">${stock.itemName}</td>
-                        <td class="border p-2">${stock.quantity}</td>
-                        <td class="border p-2">${stock.threshold}</td>
-                        <td class="border p-2">${stock.updatedBy}</td>
+                        <td class="border p-2"><input type="text" value="${stock.itemName}" class="editable p-1 border rounded w-full" disabled></td>
+                        <td class="border p-2"><input type="number" value="${stock.quantity}" class="editable p-1 border rounded w-full" disabled></td>
+                        <td class="border p-2"><input type="number" value="${stock.threshold}" class="editable p-1 border rounded w-full" disabled></td>
+                        <td class="border p-2"><input type="text" value="${stock.updatedBy}" class="editable p-1 border rounded w-full" disabled></td>
                         <td class="border p-2 flex gap-2">
+                            <button onclick="editStock(${index})" class="bg-blue-500 text-white px-2 py-1 rounded edit-btn">Edit</button>
+                            <button onclick="saveStock(${index})" class="bg-green-500 text-white px-2 py-1 rounded save-btn hidden">Save</button>
                             <button onclick="deleteStock(${index})" class="bg-red-500 text-white px-2 py-1 rounded">Delete</button>
                         </td>
                     </tr>
                 `);
             });
+        }
+
+        // Enable editing
+        function editStock(index) {
+            let row = $("#stock-list tr").eq(index);
+            row.find(".editable").prop("disabled", false);
+            row.find(".edit-btn").addClass("hidden");
+            row.find(".save-btn").removeClass("hidden");
+        }
+
+        // Save edited stock data
+        function saveStock(index) {
+            let row = $("#stock-list tr").eq(index);
+            stockData[index].itemName = row.find("td:nth-child(1) input").val();
+            stockData[index].quantity = parseInt(row.find("td:nth-child(2) input").val());
+            stockData[index].threshold = parseInt(row.find("td:nth-child(3) input").val());
+            stockData[index].updatedBy = row.find("td:nth-child(4) input").val();
+            
+            updateStockTable();
         }
 
         // Delete stock
