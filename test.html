@@ -52,15 +52,12 @@
         <!-- Transaction History -->
         <div class="mt-6">
             <h3 class="text-lg font-semibold mb-2">Transaction History</h3>
+            <button id="clear-history" class="bg-red-500 text-white px-4 py-2 rounded mb-4">Clear History</button>
             <div class="overflow-x-auto">
                 <table class="w-full border-collapse border border-gray-300">
                     <thead>
                         <tr class="bg-gray-200">
                             <th class="border p-2">Action</th>
-                            <th class="border p-2">Item</th>
-                            <th class="border p-2">Quantity</th>
-                            <th class="border p-2">Threshold</th>
-                            <th class="border p-2">Updated By</th>
                             <th class="border p-2">Timestamp</th>
                         </tr>
                     </thead>
@@ -109,6 +106,13 @@
                         $(this).hide();
                     }
                 });
+            });
+
+            // Clear transaction history
+            $('#clear-history').on('click', function() {
+                transactionHistory = [];
+                updateTransactionHistory();
+                saveStockData();
             });
         });
 
@@ -190,12 +194,18 @@
         // Log transaction
         function logTransaction(action, stock) {
             let timestamp = new Date().toLocaleString();
+            let actionDescription = '';
+
+            if (action === 'Add') {
+                actionDescription = `Added ${stock.quantity} of ${stock.itemName} (Threshold: ${stock.threshold}) by ${stock.updatedBy}`;
+            } else if (action === 'Edit') {
+                actionDescription = `Edited ${stock.itemName} to ${stock.quantity} (Threshold: ${stock.threshold}) by ${stock.updatedBy}`;
+            } else if (action === 'Delete') {
+                actionDescription = `Deleted ${stock.itemName} (Quantity: ${stock.quantity}, Threshold: ${stock.threshold}) by ${stock.updatedBy}`;
+            }
+
             transactionHistory.push({
-                action: action,
-                itemName: stock.itemName,
-                quantity: stock.quantity,
-                threshold: stock.threshold,
-                updatedBy: stock.updatedBy,
+                action: actionDescription,
                 timestamp: timestamp
             });
             updateTransactionHistory();
@@ -208,10 +218,6 @@
                 $("#transaction-history").append(`
                     <tr class="border">
                         <td class="border p-2">${transaction.action}</td>
-                        <td class="border p-2">${transaction.itemName}</td>
-                        <td class="border p-2">${transaction.quantity}</td>
-                        <td class="border p-2">${transaction.threshold}</td>
-                        <td class="border p-2">${transaction.updatedBy}</td>
                         <td class="border p-2">${transaction.timestamp}</td>
                     </tr>
                 `);
