@@ -48,19 +48,45 @@
                 <tbody id="stock-list"></tbody>
             </table>
         </div>
+
+        <!-- Transaction History -->
+        <div class="mt-6">
+            <h3 class="text-lg font-semibold mb-2">Transaction History</h3>
+            <div class="overflow-x-auto">
+                <table class="w-full border-collapse border border-gray-300">
+                    <thead>
+                        <tr class="bg-gray-200">
+                            <th class="border p-2">Action</th>
+                            <th class="border p-2">Item</th>
+                            <th class="border p-2">Quantity</th>
+                            <th class="border p-2">Threshold</th>
+                            <th class="border p-2">Updated By</th>
+                            <th class="border p-2">Timestamp</th>
+                        </tr>
+                    </thead>
+                    <tbody id="transaction-history"></tbody>
+                </table>
+            </div>
+        </div>
     </div>
 
     <script>
         let stockData = [];
-    
-        // Load stock data from localStorage
+        let transactionHistory = [];
+
+        // Load stock data and transaction history from localStorage
         $(document).ready(function() {
             const storedStockData = localStorage.getItem('stockData');
+            const storedTransactionHistory = localStorage.getItem('transactionHistory');
             if (storedStockData) {
                 stockData = JSON.parse(storedStockData);
                 updateStockTable();
             }
-    
+            if (storedTransactionHistory) {
+                transactionHistory = JSON.parse(storedTransactionHistory);
+                updateTransactionHistory();
+            }
+
             $('#search').on('input', function() {
                 let value = $(this).val().toLowerCase();
                 $('#stock-list tr').filter(function() {
@@ -85,7 +111,7 @@
                 });
             });
         });
-    
+
         // Add new stock
         $("#add-stock-form").submit(function(event) {
             event.preventDefault();
@@ -96,11 +122,12 @@
                 updatedBy: $("#updatedBy").val()
             };
             stockData.push(newStock);
+            logTransaction('Add', newStock);
             updateStockTable();
             $("#add-stock-form")[0].reset();
             saveStockData();
         });
-    
+
         // Update stock table
         function updateStockTable() {
             $("#stock-list").empty();
@@ -121,12 +148,13 @@
                 `);
             });
         }
-    
+
         // Save stock data to localStorage
         function saveStockData() {
             localStorage.setItem('stockData', JSON.stringify(stockData));
+            localStorage.setItem('transactionHistory', JSON.stringify(transactionHistory));
         }
-    
+
         // Enable editing
         function editStock(index) {
             let row = $("#stock-list tr").eq(index);
@@ -134,23 +162,61 @@
             row.find(".edit-btn").addClass("hidden");
             row.find(".save-btn").removeClass("hidden");
         }
-    
+
         // Save edited stock data
         function saveStock(index) {
             let row = $("#stock-list tr").eq(index);
-            stockData[index].itemName = row.find("td:nth-child(1) input").val();
-            stockData[index].quantity = parseInt(row.find("td:nth-child(2) input").val());
-            stockData[index].threshold = parseInt(row.find("td:nth-child(3) input").val());
-            stockData[index].updatedBy = row.find("td:nth-child(4) input").val();
-            
+            let updatedStock = {
+                itemName: row.find("td:nth-child(1) input").val(),
+                quantity: parseInt(row.find("td:nth-child(2) input").val()),
+                threshold: parseInt(row.find("td:nth-child(3) input").val()),
+                updatedBy: row.find("td:nth-child(4) input").val()
+            };
+            stockData[index] = updatedStock;
+            logTransaction('Edit', updatedStock);
             updateStockTable();
             saveStockData();
         }
-    
+
         // Delete stock
         function deleteStock(index) {
+            let deletedStock = stockData[index];
             stockData.splice(index, 1);
+            logTransaction('Delete', deletedStock);
             updateStockTable();
             saveStockData();
         }
+
+        // Log transaction
+        function logTransaction(action, stock) {
+            let timestamp = new Date().toLocaleString();
+            transactionHistory.push({
+                action: action,
+                itemName: stock.itemName,
+                quantity: stock.quantity,
+                threshold: stock.threshold,
+                updatedBy: stock.updatedBy,
+                timestamp: timestamp
+            });
+            updateTransactionHistory();
+        }
+
+        // Update transaction history table
+        function updateTransactionHistory() {
+            $("#transaction-history").empty();
+            transactionHistory.forEach(transaction => {
+                $("#transaction-history").append(`
+                    <tr class="border">
+                        <td class="border p-2">${transaction.action}</td>
+                        <td class="border p-2">${transaction.itemName}</td>
+                        <td class="border p-2">${transaction.quantity}</td>
+                        <td class="border p-2">${transaction.threshold}</td>
+                        <td class="border p-2">${transaction.updatedBy}</td>
+                        <td class="border p-2">${transaction.timestamp}</td>
+                    </tr>
+                `);
+            });
+        }
     </script>
+</body>
+</html>
