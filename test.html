@@ -52,69 +52,15 @@
 
     <script>
         let stockData = [];
-
-        // Add new stock
-        $("#add-stock-form").submit(function(event) {
-            event.preventDefault();
-            let newStock = {
-                itemName: $("#itemName").val(),
-                quantity: parseInt($("#quantity").val()),
-                threshold: parseInt($("#threshold").val()),
-                updatedBy: $("#updatedBy").val()
-            };
-            stockData.push(newStock);
-            updateStockTable();
-            $("#add-stock-form")[0].reset();
-        });
-
-        // Update stock table
-        function updateStockTable() {
-            $("#stock-list").empty();
-            stockData.sort((a, b) => a.itemName.localeCompare(b.itemName));
-            stockData.forEach((stock, index) => {
-                $("#stock-list").append(`
-                    <tr class="border" data-stock="${stock.quantity}" data-threshold="${stock.threshold}" data-name="${stock.itemName.toLowerCase()}">
-                        <td class="border p-2"><input type="text" value="${stock.itemName}" class="editable p-1 border rounded w-full" disabled></td>
-                        <td class="border p-2"><input type="number" value="${stock.quantity}" class="editable p-1 border rounded w-full" disabled></td>
-                        <td class="border p-2"><input type="number" value="${stock.threshold}" class="editable p-1 border rounded w-full" disabled></td>
-                        <td class="border p-2"><input type="text" value="${stock.updatedBy}" class="editable p-1 border rounded w-full" disabled></td>
-                        <td class="border p-2 flex gap-2">
-                            <button onclick="editStock(${index})" class="bg-blue-500 text-white px-2 py-1 rounded edit-btn">Edit</button>
-                            <button onclick="saveStock(${index})" class="bg-green-500 text-white px-2 py-1 rounded save-btn hidden">Save</button>
-                            <button onclick="deleteStock(${index})" class="bg-red-500 text-white px-2 py-1 rounded">Delete</button>
-                        </td>
-                    </tr>
-                `);
-            });
-        }
-
-        // Enable editing
-        function editStock(index) {
-            let row = $("#stock-list tr").eq(index);
-            row.find(".editable").prop("disabled", false);
-            row.find(".edit-btn").addClass("hidden");
-            row.find(".save-btn").removeClass("hidden");
-        }
-
-        // Save edited stock data
-        function saveStock(index) {
-            let row = $("#stock-list tr").eq(index);
-            stockData[index].itemName = row.find("td:nth-child(1) input").val();
-            stockData[index].quantity = parseInt(row.find("td:nth-child(2) input").val());
-            stockData[index].threshold = parseInt(row.find("td:nth-child(3) input").val());
-            stockData[index].updatedBy = row.find("td:nth-child(4) input").val();
-            
-            updateStockTable();
-        }
-
-        // Delete stock
-        function deleteStock(index) {
-            stockData.splice(index, 1);
-            updateStockTable();
-        }
-
-        // Filtering and Searching
+    
+        // Load stock data from localStorage
         $(document).ready(function() {
+            const storedStockData = localStorage.getItem('stockData');
+            if (storedStockData) {
+                stockData = JSON.parse(storedStockData);
+                updateStockTable();
+            }
+    
             $('#search').on('input', function() {
                 let value = $(this).val().toLowerCase();
                 $('#stock-list tr').filter(function() {
@@ -139,6 +85,72 @@
                 });
             });
         });
+    
+        // Add new stock
+        $("#add-stock-form").submit(function(event) {
+            event.preventDefault();
+            let newStock = {
+                itemName: $("#itemName").val(),
+                quantity: parseInt($("#quantity").val()),
+                threshold: parseInt($("#threshold").val()),
+                updatedBy: $("#updatedBy").val()
+            };
+            stockData.push(newStock);
+            updateStockTable();
+            $("#add-stock-form")[0].reset();
+            saveStockData();
+        });
+    
+        // Update stock table
+        function updateStockTable() {
+            $("#stock-list").empty();
+            stockData.sort((a, b) => a.itemName.localeCompare(b.itemName));
+            stockData.forEach((stock, index) => {
+                $("#stock-list").append(`
+                    <tr class="border" data-stock="${stock.quantity}" data-threshold="${stock.threshold}" data-name="${stock.itemName.toLowerCase()}">
+                        <td class="border p-2"><input type="text" value="${stock.itemName}" class="editable p-1 border rounded w-full" disabled></td>
+                        <td class="border p-2"><input type="number" value="${stock.quantity}" class="editable p-1 border rounded w-full" disabled></td>
+                        <td class="border p-2"><input type="number" value="${stock.threshold}" class="editable p-1 border rounded w-full" disabled></td>
+                        <td class="border p-2"><input type="text" value="${stock.updatedBy}" class="editable p-1 border rounded w-full" disabled></td>
+                        <td class="border p-2 flex gap-2">
+                            <button onclick="editStock(${index})" class="bg-blue-500 text-white px-2 py-1 rounded edit-btn">Edit</button>
+                            <button onclick="saveStock(${index})" class="bg-green-500 text-white px-2 py-1 rounded save-btn hidden">Save</button>
+                            <button onclick="deleteStock(${index})" class="bg-red-500 text-white px-2 py-1 rounded">Delete</button>
+                        </td>
+                    </tr>
+                `);
+            });
+        }
+    
+        // Save stock data to localStorage
+        function saveStockData() {
+            localStorage.setItem('stockData', JSON.stringify(stockData));
+        }
+    
+        // Enable editing
+        function editStock(index) {
+            let row = $("#stock-list tr").eq(index);
+            row.find(".editable").prop("disabled", false);
+            row.find(".edit-btn").addClass("hidden");
+            row.find(".save-btn").removeClass("hidden");
+        }
+    
+        // Save edited stock data
+        function saveStock(index) {
+            let row = $("#stock-list tr").eq(index);
+            stockData[index].itemName = row.find("td:nth-child(1) input").val();
+            stockData[index].quantity = parseInt(row.find("td:nth-child(2) input").val());
+            stockData[index].threshold = parseInt(row.find("td:nth-child(3) input").val());
+            stockData[index].updatedBy = row.find("td:nth-child(4) input").val();
+            
+            updateStockTable();
+            saveStockData();
+        }
+    
+        // Delete stock
+        function deleteStock(index) {
+            stockData.splice(index, 1);
+            updateStockTable();
+            saveStockData();
+        }
     </script>
-</body>
-</html>
