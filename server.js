@@ -92,8 +92,10 @@ app.post('/update-stock/:id', async (req, res) => {
         await history.save();
         
         io.emit('stock_updated', stock);
+        res.json(stock); // Return the updated stock data
+    } else {
+        res.status(404).send('Stock not found');
     }
-    res.redirect('/');
 });
 
 app.post('/delete-stock/:id', async (req, res) => {
