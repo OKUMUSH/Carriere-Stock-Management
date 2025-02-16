@@ -15,7 +15,7 @@
         <!-- Add New Stock -->
         <div class="bg-gray-200 p-4 rounded-lg mb-6 shadow-md">   
             <h3 class="text-lg font-semibold mb-2">Add New Stock</h3>
-            <form action="/stock" method="POST" class="flex flex-wrap gap-2 items-center justify-center w-full">
+            <form id="add-stock-form" class="flex flex-wrap gap-2 items-center justify-center w-full">
                 <input type="text" name="itemName" placeholder="Item Name" required class="p-2 border rounded w-1/4">
                 <input type="number" name="quantity" placeholder="Quantity" required class="p-2 border rounded w-1/4">
                 <input type="number" name="threshold" placeholder="Threshold" required class="p-2 border rounded w-1/4">
@@ -107,13 +107,73 @@
 
     <script>
         $(document).ready(function() {
-            // Handle form submission via AJAX
-            $('.update-stock-form').on('submit', function(event) {
+            // Handle form submission via AJAX for adding new stock
+            $('#add-stock-form').on('submit', function(event) {
+                event.preventDefault();
+                const form = $(this);
+                const formData = form.serialize();
+
+                $.ajax({
+                    type: 'POST',
+                    url: '/stock',
+                    data: formData,
+                    success: function(response) {
+                        console.log('Add successful:', response); // Debug log
+                        // Add the new stock to the table
+                        const newRow = `
+                            <tr class="border" data-stock="${response.stock.quantity}" data-name="${response.stock.itemName.toLowerCase()}" data-threshold="${response.stock.threshold}">
+                                <td class="border p-2">${response.stock.itemName}</td>
+                                <td class="border p-2">
+                                    <form id="update-stock-form-${response.stock._id}" action="/update-stock/${response.stock._id}" method="POST" class="update-stock-form">
+                                        <input type="number" name="quantity" value="${response.stock.quantity}" class="w-full p-1 border rounded">
+                                </td>
+                                <td class="border p-2">
+                                        <input type="number" name="threshold" value="${response.stock.threshold}" class="w-full p-1 border rounded">
+                                </td>
+                                <td class="border p-2">
+                                    <input type="text" name="updatedBy" value="${response.stock.updatedBy}" class="w-full p-1 border rounded">
+                                </td>
+                                <td class="border p-2 flex gap-2">
+                                        <button type="submit" class="bg-blue-500 text-white px-2 py-1 rounded">Save</button>
+                                    </form>
+                                    <form action="/delete-stock/${response.stock._id}" method="POST" class="delete-stock-form inline">
+                                        <button type="submit" class="bg-red-500 text-white px-2 py-1 rounded">Delete</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        `;
+                        $('#stock-list').append(newRow);
+                        form[0].reset(); // Reset the form
+
+                        // Update the history section with the new log
+                        const historyRow = `
+                            <tr class="border">
+                                <td class="border p-2">${response.history.itemName}</td>
+                                <td class="border p-2">${response.history.change}</td>
+                                <td class="border p-2">${response.history.changedBy}</td>
+                                <td class="border p-2">${new Date(response.history.timestamp).toLocaleString()}</td>
+                                <td class="border p-2">
+                                    <form action="/delete-history/${response.history._id}" method="POST" class="inline">
+                                        <button type="submit" class="bg-gray-500 text-white px-2 py-1 rounded">Delete Log</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        `;
+                        $('#history-list').prepend(historyRow);
+                    },
+                    error: function(error) {
+                        console.error('Error adding stock:', error);
+                    }
+                });
+            });
+
+            // Handle form submission via AJAX for updating stock
+            $(document).on('submit', '.update-stock-form', function(event) {
                 event.preventDefault();
                 const form = $(this);
                 const formData = form.serialize();
                 const actionUrl = form.attr('action');
-    
+
                 $.ajax({
                     type: 'POST',
                     url: actionUrl,
@@ -149,7 +209,7 @@
             });
 
             // Handle delete stock via AJAX
-            $('.delete-stock-form').on('submit', function(event) {
+            $(document).on('submit', '.delete-stock-form', function(event) {
                 event.preventDefault();
                 const form = $(this);
                 const actionUrl = form.attr('action');
@@ -183,7 +243,7 @@
                     }
                 });
             });
-    
+
             // Filtering and Searching
             $('#search').on('input', function() {
                 let value = $(this).val().toLowerCase();
@@ -191,7 +251,7 @@
                     $(this).toggle($(this).data('name').includes(value));
                 });
             });
-    
+
             $('#filter-stock').on('change', function() {
                 let filter = $(this).val();
                 $('#stock-list tr').each(function() {

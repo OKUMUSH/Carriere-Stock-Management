@@ -69,7 +69,7 @@ app.post('/stock', async (req, res) => {
     await history.save();
 
     io.emit('stock_updated', stock);
-    res.redirect('/');
+    res.json({ stock, history }); // Return the new stock data and history log
 });
 
 app.post('/update-stock/:id', async (req, res) => {
