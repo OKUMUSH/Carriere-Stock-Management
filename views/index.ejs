@@ -1,5 +1,3 @@
-<!-- views/index.ejs (Improved Stock Management UI) -->
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -108,56 +106,57 @@
     </div>
 
     <script>
-    $(document).ready(function() {
-        // Handle form submission via AJAX
-        $('.update-stock-form').on('submit', function(event) {
-            event.preventDefault();
-            const form = $(this);
-            const formData = form.serialize();
-            const actionUrl = form.attr('action');
-
-            $.ajax({
-                type: 'POST',
-                url: actionUrl,
-                data: formData,
-                success: function(response) {
-                    // Update the table row with the new data
-                    const row = form.closest('tr');
-                    row.find('input[name="quantity"]').val(response.quantity);
-                    row.find('input[name="threshold"]').val(response.threshold);
-                    row.find('input[name="updatedBy"]').val(response.updatedBy);
-                },
-                error: function(error) {
-                    console.error('Error updating stock:', error);
-                }
+        $(document).ready(function() {
+            // Handle form submission via AJAX
+            $('.update-stock-form').on('submit', function(event) {
+                event.preventDefault();
+                const form = $(this);
+                const formData = form.serialize();
+                const actionUrl = form.attr('action');
+    
+                $.ajax({
+                    type: 'POST',
+                    url: actionUrl,
+                    data: formData,
+                    success: function(response) {
+                        console.log('Update successful:', response); // Debug log
+                        // Update the table row with the new data
+                        const row = form.closest('tr');
+                        row.find('input[name="quantity"]').val(response.quantity);
+                        row.find('input[name="threshold"]').val(response.threshold);
+                        row.find('input[name="updatedBy"]').val(response.updatedBy);
+                    },
+                    error: function(error) {
+                        console.error('Error updating stock:', error);
+                    }
+                });
+            });
+    
+            // Filtering and Searching
+            $('#search').on('input', function() {
+                let value = $(this).val().toLowerCase();
+                $('#stock-list tr').filter(function() {
+                    $(this).toggle($(this).data('name').includes(value));
+                });
+            });
+    
+            $('#filter-stock').on('change', function() {
+                let filter = $(this).val();
+                $('#stock-list tr').each(function() {
+                    let stock = parseInt($(this).attr('data-stock')) || 0;
+                    let threshold = parseInt($(this).attr('data-threshold')) || 0;
+                    if (filter === 'all') {
+                        $(this).show();
+                    } else if (filter === 'low' && stock <= threshold) {
+                        $(this).show();
+                    } else if (filter === 'critical' && stock === 0) {
+                        $(this).show();
+                    } else {
+                        $(this).hide();
+                    }
+                });
             });
         });
-
-        // Filtering and Searching
-        $('#search').on('input', function() {
-            let value = $(this).val().toLowerCase();
-            $('#stock-list tr').filter(function() {
-                $(this).toggle($(this).data('name').includes(value));
-            });
-        });
-
-        $('#filter-stock').on('change', function() {
-            let filter = $(this).val();
-            $('#stock-list tr').each(function() {
-                let stock = parseInt($(this).attr('data-stock')) || 0;
-                let threshold = parseInt($(this).attr('data-threshold')) || 0;
-                if (filter === 'all') {
-                    $(this).show();
-                } else if (filter === 'low' && stock <= threshold) {
-                    $(this).show();
-                } else if (filter === 'critical' && stock === 0) {
-                    $(this).show();
-                } else {
-                    $(this).hide();
-                }
-            });
-        });
-    });
-</script>
+    </script>
 </body>
 </html>
