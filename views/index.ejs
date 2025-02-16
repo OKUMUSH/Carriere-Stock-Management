@@ -160,6 +160,7 @@
                             </tr>
                         `;
                         $('#history-list').prepend(historyRow);
+                        applyFilters(); // Apply filters to the updated stock list
                     },
                     error: function(error) {
                         console.error('Error adding stock:', error);
@@ -182,6 +183,8 @@
                         console.log('Update successful:', response); // Debug log
                         // Update the table row with the new data
                         const row = form.closest('tr');
+                        row.attr('data-stock', response.stock.quantity);
+                        row.attr('data-threshold', response.stock.threshold);
                         row.find('input[name="quantity"]').val(response.stock.quantity);
                         row.find('input[name="threshold"]').val(response.stock.threshold);
                         row.find('input[name="updatedBy"]').val(response.stock.updatedBy);
@@ -201,6 +204,7 @@
                             </tr>
                         `;
                         $('#history-list').prepend(historyRow);
+                        applyFilters(); // Apply filters to the updated stock list
                     },
                     error: function(error) {
                         console.error('Error updating stock:', error);
@@ -237,6 +241,7 @@
                             </tr>
                         `;
                         $('#history-list').prepend(historyRow);
+                        applyFilters(); // Apply filters to the updated stock list
                     },
                     error: function(error) {
                         console.error('Error deleting stock:', error);
@@ -246,28 +251,30 @@
 
             // Filtering and Searching
             $('#search').on('input', function() {
-                let value = $(this).val().toLowerCase();
-                $('#stock-list tr').filter(function() {
-                    $(this).toggle($(this).data('name').includes(value));
-                });
+                applyFilters();
             });
 
             $('#filter-stock').on('change', function() {
-                let filter = $(this).val();
+                applyFilters();
+            });
+
+            function applyFilters() {
+                let searchValue = $('#search').val().toLowerCase();
+                let filterValue = $('#filter-stock').val();
+
                 $('#stock-list tr').each(function() {
                     let stock = parseInt($(this).attr('data-stock')) || 0;
                     let threshold = parseInt($(this).attr('data-threshold')) || 0;
-                    if (filter === 'all') {
-                        $(this).show();
-                    } else if (filter === 'low' && stock <= threshold) {
-                        $(this).show();
-                    } else if (filter === 'critical' && stock === 0) {
-                        $(this).show();
-                    } else {
-                        $(this).hide();
-                    }
+                    let name = $(this).attr('data-name');
+
+                    let matchesSearch = name.includes(searchValue);
+                    let matchesFilter = (filterValue === 'all') ||
+                                        (filterValue === 'low' && stock <= threshold) ||
+                                        (filterValue === 'critical' && stock === 0);
+
+                    $(this).toggle(matchesSearch && matchesFilter);
                 });
-            });
+            }
         });
     </script>
 </body>
