@@ -94,7 +94,7 @@
                             <td class="border p-2"><%= log.changedBy %></td>
                             <td class="border p-2"><%= log.timestamp.toLocaleString() %></td>
                             <td class="border p-2">
-                                <form action="/delete-history/<%= log._id %>" method="POST" class="inline">
+                                <form action="/delete-history/<%= log._id %>" method="POST" class="delete-history-form inline">
                                     <button type="submit" class="bg-gray-500 text-white px-2 py-1 rounded">Delete Log</button>
                                 </form>
                             </td>
@@ -153,7 +153,7 @@
                                 <td class="border p-2">${response.history.changedBy}</td>
                                 <td class="border p-2">${new Date(response.history.timestamp).toLocaleString()}</td>
                                 <td class="border p-2">
-                                    <form action="/delete-history/${response.history._id}" method="POST" class="inline">
+                                    <form action="/delete-history/${response.history._id}" method="POST" class="delete-history-form inline">
                                         <button type="submit" class="bg-gray-500 text-white px-2 py-1 rounded">Delete Log</button>
                                     </form>
                                 </td>
@@ -197,7 +197,7 @@
                                 <td class="border p-2">${response.history.changedBy}</td>
                                 <td class="border p-2">${new Date(response.history.timestamp).toLocaleString()}</td>
                                 <td class="border p-2">
-                                    <form action="/delete-history/${response.history._id}" method="POST" class="inline">
+                                    <form action="/delete-history/${response.history._id}" method="POST" class="delete-history-form inline">
                                         <button type="submit" class="bg-gray-500 text-white px-2 py-1 rounded">Delete Log</button>
                                     </form>
                                 </td>
@@ -234,7 +234,7 @@
                                 <td class="border p-2">${response.history.changedBy}</td>
                                 <td class="border p-2">${new Date(response.history.timestamp).toLocaleString()}</td>
                                 <td class="border p-2">
-                                    <form action="/delete-history/${response.history._id}" method="POST" class="inline">
+                                    <form action="/delete-history/${response.history._id}" method="POST" class="delete-history-form inline">
                                         <button type="submit" class="bg-gray-500 text-white px-2 py-1 rounded">Delete Log</button>
                                     </form>
                                 </td>
@@ -245,6 +245,26 @@
                     },
                     error: function(error) {
                         console.error('Error deleting stock:', error);
+                    }
+                });
+            });
+
+            // Handle delete history log via AJAX
+            $(document).on('submit', '.delete-history-form', function(event) {
+                event.preventDefault();
+                const form = $(this);
+                const actionUrl = form.attr('action');
+
+                $.ajax({
+                    type: 'POST',
+                    url: actionUrl,
+                    success: function(response) {
+                        console.log('Delete log successful:', response); // Debug log
+                        // Remove the history row
+                        form.closest('tr').remove();
+                    },
+                    error: function(error) {
+                        console.error('Error deleting log:', error);
                     }
                 });
             });

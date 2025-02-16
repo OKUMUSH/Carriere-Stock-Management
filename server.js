@@ -125,7 +125,7 @@ app.get('/history', async (req, res) => {
 // Manual delete history
 app.post('/delete-history/:id', async (req, res) => {
     await StockHistory.deleteOne({ _id: req.params.id });
-    res.redirect('/');
+    res.json({ success: true }); // Return a JSON response
 });
 
 // WebSocket Connection
