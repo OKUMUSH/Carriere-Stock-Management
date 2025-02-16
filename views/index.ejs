@@ -63,7 +63,7 @@
                             <td class="border p-2 flex gap-2">
                                     <button type="submit" class="bg-blue-500 text-white px-2 py-1 rounded">Save</button>
                                 </form>
-                                <form action="/delete-stock/<%= stock._id %>" method="POST" class="inline">
+                                <form action="/delete-stock/<%= stock._id %>" method="POST" class="delete-stock-form inline">
                                     <button type="submit" class="bg-red-500 text-white px-2 py-1 rounded">Delete</button>
                                 </form>
                             </td>
@@ -86,7 +86,7 @@
                         <th class="border p-2">Actions</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody id="history-list">
                     <% history.forEach(log => { %>
                         <tr class="border">
                             <td class="border p-2"><%= log.itemName %></td>
@@ -122,12 +122,64 @@
                         console.log('Update successful:', response); // Debug log
                         // Update the table row with the new data
                         const row = form.closest('tr');
-                        row.find('input[name="quantity"]').val(response.quantity);
-                        row.find('input[name="threshold"]').val(response.threshold);
-                        row.find('input[name="updatedBy"]').val(response.updatedBy);
+                        row.find('input[name="quantity"]').val(response.stock.quantity);
+                        row.find('input[name="threshold"]').val(response.stock.threshold);
+                        row.find('input[name="updatedBy"]').val(response.stock.updatedBy);
+
+                        // Update the history section with the new log
+                        const historyRow = `
+                            <tr class="border">
+                                <td class="border p-2">${response.history.itemName}</td>
+                                <td class="border p-2">${response.history.change}</td>
+                                <td class="border p-2">${response.history.changedBy}</td>
+                                <td class="border p-2">${new Date(response.history.timestamp).toLocaleString()}</td>
+                                <td class="border p-2">
+                                    <form action="/delete-history/${response.history._id}" method="POST" class="inline">
+                                        <button type="submit" class="bg-gray-500 text-white px-2 py-1 rounded">Delete Log</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        `;
+                        $('#history-list').prepend(historyRow);
                     },
                     error: function(error) {
                         console.error('Error updating stock:', error);
+                    }
+                });
+            });
+
+            // Handle delete stock via AJAX
+            $('.delete-stock-form').on('submit', function(event) {
+                event.preventDefault();
+                const form = $(this);
+                const actionUrl = form.attr('action');
+
+                $.ajax({
+                    type: 'POST',
+                    url: actionUrl,
+                    success: function(response) {
+                        console.log('Delete successful:', response); // Debug log
+                        // Remove the table row
+                        form.closest('tr').remove();
+
+                        // Update the history section with the new log
+                        const historyRow = `
+                            <tr class="border">
+                                <td class="border p-2">${response.history.itemName}</td>
+                                <td class="border p-2">${response.history.change}</td>
+                                <td class="border p-2">${response.history.changedBy}</td>
+                                <td class="border p-2">${new Date(response.history.timestamp).toLocaleString()}</td>
+                                <td class="border p-2">
+                                    <form action="/delete-history/${response.history._id}" method="POST" class="inline">
+                                        <button type="submit" class="bg-gray-500 text-white px-2 py-1 rounded">Delete Log</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        `;
+                        $('#history-list').prepend(historyRow);
+                    },
+                    error: function(error) {
+                        console.error('Error deleting stock:', error);
                     }
                 });
             });

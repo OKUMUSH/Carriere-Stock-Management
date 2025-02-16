@@ -92,16 +92,28 @@ app.post('/update-stock/:id', async (req, res) => {
         await history.save();
         
         io.emit('stock_updated', stock);
-        res.json(stock); // Return the updated stock data
+        res.json({ stock, history }); // Return the updated stock data and history log
     } else {
         res.status(404).send('Stock not found');
     }
 });
 
 app.post('/delete-stock/:id', async (req, res) => {
-    await Stock.findByIdAndDelete(req.params.id);
-    io.emit('stock_deleted', req.params.id);
-    res.redirect('/');
+    const stock = await Stock.findByIdAndDelete(req.params.id);
+    if (stock) {
+        const history = new StockHistory({
+            itemId: stock._id,
+            itemName: stock.itemName,
+            change: `Deleted stock with quantity ${stock.quantity} and threshold ${stock.threshold}`,
+            changedBy: stock.updatedBy,
+        });
+        await history.save();
+        
+        io.emit('stock_deleted', stock._id);
+        res.json({ stock, history }); // Return the deleted stock data and history log
+    } else {
+        res.status(404).send('Stock not found');
+    }
 });
 
 // Get stock history
