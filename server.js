@@ -7,6 +7,7 @@ const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const path = require('path');
 const moment = require('moment');
+require('dotenv').config(); // Load environment variables from .env file
 
 const app = express();
 const server = http.createServer(app);
@@ -20,10 +21,7 @@ app.set('views', path.join(__dirname, 'views'));
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Connect to MongoDB
-mongoose.connect('mongodb://localhost:27017/stock_management', {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-});
+mongoose.connect(process.env.MONGODB_URI);
 
 const StockSchema = new mongoose.Schema({
     itemName: String,
@@ -65,7 +63,7 @@ app.post('/stock', async (req, res) => {
     const history = new StockHistory({
         itemId: stock._id,
         itemName: itemName,
-        change: ` Added new stock with quantity ${quantity} and threshold ${threshold}`,
+        change: `Added new stock with quantity ${quantity} and threshold ${threshold}`,
         changedBy: updatedBy,
     });
     await history.save();
@@ -122,5 +120,5 @@ io.on('connection', (socket) => {
     socket.on('disconnect', () => console.log('Client disconnected'));
 });
 
-const PORT = 8080;
+const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
