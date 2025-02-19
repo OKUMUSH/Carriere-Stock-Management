@@ -7,6 +7,7 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.socket.io/4.0.1/socket.io.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body class="bg-gray-100 p-5">
     <div class="max-w-5xl mx-auto bg-white p-6 rounded-lg shadow-md">
@@ -161,6 +162,15 @@
                         `;
                         $('#history-list').prepend(historyRow);
                         applyFilters(); // Apply filters to the updated stock list
+
+                        //Alert Success
+                        Swal.fire({
+                        position: "top-end",
+                        icon: "success",
+                        title: "New Stock added to system",
+                        showConfirmButton: false,
+                        timer: 1500
+                        });
                     },
                     error: function(error) {
                         console.error('Error adding stock:', error);
@@ -205,6 +215,14 @@
                         `;
                         $('#history-list').prepend(historyRow);
                         applyFilters(); // Apply filters to the updated stock list
+                        //Alert Success
+                        Swal.fire({
+                        position: "top-end",
+                        icon: "success",
+                        title: "Stock updated",
+                        showConfirmButton: false,
+                        timer: 1500
+                        });
                     },
                     error: function(error) {
                         console.error('Error updating stock:', error);
@@ -241,7 +259,15 @@
                             </tr>
                         `;
                         $('#history-list').prepend(historyRow);
-                        applyFilters(); // Apply filters to the updated stock list
+                        applyFilters(); // Apply filters to the deleted stock list
+                        //Alert Success
+                        Swal.fire({
+                        position: "top-end",
+                        icon: "success",
+                        title: "Stock deleted",
+                        showConfirmButton: false,
+                        timer: 1500
+                        });
                     },
                     error: function(error) {
                         console.error('Error deleting stock:', error);
